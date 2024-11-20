@@ -15,10 +15,10 @@ contract Polymarkteth {
     using Math for uint256;
 
     struct Bet {
-        string id;
-        address owner;
+        uint256 id;
+        address payable owner;
         string option;
-        uint256 amount;
+        uint256 amount; //wei
     }
 
     enum BET_RESULT {
@@ -28,18 +28,31 @@ contract Polymarkteth {
     }
 
     uint256 public constant ODD_DECIMALS = 10;
-    uint256 public constant FEES = 10; // as PERCENTAGE
+    uint256 public constant FEES = 10; // as PERCENTAGE unit (%)
 
-    address payable public admin;
-
-    mapping(string => Bet) bets;
-    string[] betKeys;
-    BET_RESULT status = BET_RESULT.PENDING;
+    /** SLOTS */
+    address payable public admin; //0
+    mapping(uint256 => Bet) public bets; //1
+    uint256[] public betKeys; //2
+    BET_RESULT status = BET_RESULT.PENDING; //3
 
     event Pong();
 
     constructor(address payable _admin) payable {
         admin = _admin;
+    }
+
+    /**
+     * Getter /setter
+     */
+    function getBetKeys() public view returns (uint256[] memory) {
+        return betKeys;
+    }
+
+//FIXME
+    function addBets(Bet memory bet) public {
+        betKeys.push(bet.id);
+        bets[bet.id] = bet;
     }
 
     /**
@@ -50,17 +63,15 @@ contract Polymarkteth {
         emit Pong();
     }
 
-    function generateBetId() private view returns (string memory) {
+    function generateBetId() private view returns (uint256) {
         console.log("Calling generateBetId");
-        return
-            string(
-                abi.encodePacked(
-                    keccak256(
-                        abi.encodePacked(
-                            block.timestamp,
-                            block.prevrandao,
-                            msg.sender
-                        )
+        return 
+         uint256(
+                keccak256(
+                    abi.encodePacked(
+                        block.timestamp,
+                        block.prevrandao,
+                        msg.sender
                     )
                 )
             );
@@ -70,29 +81,29 @@ contract Polymarkteth {
      * place bets and returns the betId
      */
     function placeBet(
-        address user,
         string calldata selection,
         uint256 odds
-    ) public payable returns (string memory) {
+    ) public payable returns (uint256) {
         require(msg.value > 0, "Bet amount must be positive.");
         require(
-            msg.value <= user.balance,
+            msg.value <= msg.sender.balance,
             "Insufficient balance to place this bet."
         );
 
-        string memory betId = generateBetId();
-        Bet memory bet = Bet({
+        uint256 betId = generateBetId();
+
+        bets[betId] = Bet({
             id: betId,
             option: selection,
             amount: msg.value,
-            owner: user
+            owner: payable(msg.sender)
         });
-
-        bets[betId] = bet;
         betKeys.push(betId);
 
+        console.log("Bet %d placed", betId);
+
         console.log(
-            "Bet placed: ${d} on ${s} at odds of ${d}",
+            "Bet placed: %d on %s at odds of %d",
             msg.value,
             selection,
             odds
@@ -104,7 +115,7 @@ contract Polymarkteth {
      *
      * @param option selected option
      * @param betAmount (Optional : default is 0) if user want to know the output gain after putting some money on it. Otherwise it gives actual gain without betting and influencing odds calculation
-     * @return odds
+     * @return odds (in ODDS_DECIMAL unit)
      */
     function calculateOdds(
         string memory option,
@@ -114,7 +125,7 @@ contract Polymarkteth {
         for (uint i = 0; i < betKeys.length; i++) {
             Bet memory bet = bets[betKeys[i]];
             if (keccak256(bytes(bet.option)) != keccak256(bytes(option)))
-                totalLoserAmount += bet.amount;
+                totalLoserAmount.tryAdd(bet.amount);
         }
         console.log("totalLoserAmount : %d", totalLoserAmount);
 
@@ -122,21 +133,37 @@ contract Polymarkteth {
         for (uint i = 0; i < betKeys.length; i++) {
             Bet memory bet = bets[betKeys[i]];
             if (keccak256(bytes(bet.option)) == keccak256(bytes(option)))
-                totalWinnerAmount += bet.amount;
+                totalWinnerAmount.tryAdd(bet.amount);
         }
         console.log("totalWinnerAmount  : %d", totalWinnerAmount);
-        (bool success, uint256 part) = totalLoserAmount.tryDiv(
+        uint256 part = Math.mulDiv(
+            totalLoserAmount,
+            ODD_DECIMALS,
             totalWinnerAmount
         );
-        if (success)
-            return (1 * 10) ^ (ODD_DECIMALS + part - FEES * 10) ^ ODD_DECIMALS;
-        else
-            revert("Problem while dividing totalLoserAmount/totalWinnerAmount");
+
+        console.log("part  : %d", part);
+
+        (bool success1, uint256 oddwithoutFees) = part.tryAdd(
+            10 ** ODD_DECIMALS
+        );
+        require(success1, "Cannot add part and 1");
+
+        console.log("oddwithoutFees  : %d", oddwithoutFees);
+
+        (bool success2, uint256 odd) = oddwithoutFees.trySub(
+            (FEES * 10 ** ODD_DECIMALS) / 100
+        );
+        require(success2, "Cannot remove fees from odd");
+
+        console.log("odd  : %d", odd);
+
+        return odd;
     }
 
     function resolveResult(
         string memory optionResult,
-        string memory result
+        BET_RESULT result
     ) public {
         require(
             msg.sender != admin,
@@ -149,41 +176,57 @@ contract Polymarkteth {
             )
         );
 
-        
-  require(status != BET_RESULT.PENDING, string(
-                abi.encodePacked("Result is already given and bets are resolved : ", status)));
-  }
+        require(
+            status != BET_RESULT.PENDING,
+            string(
+                abi.encodePacked(
+                    "Result is already given and bets are resolved : ",
+                    status
+                )
+            )
+        );
 
-/*
-  if (result !== BET_RESULT.WIN && optionResult !== BET_RESULT.DRAW) {
-    const errorMessage = "Only give winners or draw, no other choices";
-    console.error(errorMessage);
-    return new Response(errorMessage, { status: 500 });
-  }
+        require(
+            result != BET_RESULT.WIN && result != BET_RESULT.DRAW,
+            "Only give winners or draw, no other choices"
+        );
 
-  const bets = new Map<string, Bet>(Object.entries(Kv.get(KEYS.BETMAP)!));
+        for (uint i = 0; i < betKeys.length; i++) {
+            Bet memory bet = bets[betKeys[i]];
+            if (
+                result == BET_RESULT.WIN &&
+                keccak256(bytes(bet.option)) == keccak256(bytes(optionResult))
+            ) {
+                //WINNER!
+                uint256 earnings = Math.mulDiv(
+                    bet.amount,
+                    calculateOdds(bet.option, 0),
+                    10 ** ODD_DECIMALS
+                );
+                console.log("earnings : %d for %s", earnings, bet.owner);
+                bet.owner.transfer(earnings);
+            } else if (result == BET_RESULT.DRAW) {
+                //GIVE BACK MONEY - FEES
 
-  bets.forEach((bet) => {
-    const fees = Kv.get<number>(KEYS.FEES)!;
-    if (result === BET_RESULT.WIN && bet.option === optionResult) {
-      //WINNER!
-      const earnings = bet.amount * calculateOdds(bet.option, 0);
-      console.log("earnings : " + earnings + " for " + bet.owner);
-      Ledger.transfer(bet.owner, earnings);
-    } else if (result === BET_RESULT.DRAW) {
-      //GIVE BACK MONEY - FEES
-      console.log(
-        "give back money : " + bet.amount * (1 - fees) + " for " + bet.owner
-      );
-      Ledger.transfer(bet.owner, bet.amount * (1 - fees));
-    } else {
-      //NEXT
-      console.log("bet lost for " + bet.owner);
-    }
-  });
+                uint256 feesAmount = Math.mulDiv(bet.amount, FEES, 100);
 
-  Kv.set(KEYS.RESULT, result);
+                (bool success, uint256 moneyBack) = bet.amount.trySub(
+                    feesAmount
+                );
 
-  return new Response();*/
+                require(success, "Cannot sub fees amount from amount");
+
+                console.log(
+                    "give back money : %d for %s",
+                    moneyBack,
+                    bet.owner
+                );
+
+                bet.owner.transfer(moneyBack);
+            } else {
+                //NEXT
+                console.log("bet lost for %s", bet.owner);
+            }
+        }
     }
 }
