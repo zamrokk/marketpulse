@@ -34,7 +34,7 @@ contract Polymarkteth {
     address payable public admin; //0
     mapping(uint256 => Bet) public bets; //1
     uint256[] public betKeys; //2
-    BET_RESULT status = BET_RESULT.PENDING; //3
+    BET_RESULT public status = BET_RESULT.PENDING; //3
 
     event Pong();
 
@@ -49,10 +49,30 @@ contract Polymarkteth {
         return betKeys;
     }
 
-//FIXME
-    function addBets(Bet memory bet) public {
-        betKeys.push(bet.id);
-        bets[bet.id] = bet;
+    function getBets(uint256 betId) public view returns (Bet memory bet) {
+        return bets[betId];
+    }
+
+    /** Utility
+     *
+     * */
+
+    function addressToString(
+        address _addr
+    ) public pure returns (string memory) {
+        bytes memory alphabet = "0123456789abcdef";
+        bytes20 value = bytes20(_addr);
+        bytes memory str = new bytes(42);
+
+        str[0] = "0";
+        str[1] = "x";
+
+        for (uint i = 0; i < 20; i++) {
+            str[2 + i * 2] = alphabet[uint(uint8(value[i] >> 4))];
+            str[3 + i * 2] = alphabet[uint(uint8(value[i] & 0x0f))];
+        }
+
+        return string(str);
     }
 
     /**
@@ -65,8 +85,8 @@ contract Polymarkteth {
 
     function generateBetId() private view returns (uint256) {
         console.log("Calling generateBetId");
-        return 
-         uint256(
+        return
+            uint256(
                 keccak256(
                     abi.encodePacked(
                         block.timestamp,
@@ -119,30 +139,48 @@ contract Polymarkteth {
      */
     function calculateOdds(
         string memory option,
-        uint256 betAmount
+        uint256 betAmount //wei
     ) public view returns (uint256) {
-        uint256 totalLoserAmount = 0;
+        console.log(
+            "calculateOdds for option %s and bet amount is %d",
+            option,
+            betAmount
+        );
+
+        uint256 totalLoserAmount = 0; //wei
         for (uint i = 0; i < betKeys.length; i++) {
             Bet memory bet = bets[betKeys[i]];
-            if (keccak256(bytes(bet.option)) != keccak256(bytes(option)))
-                totalLoserAmount.tryAdd(bet.amount);
+
+            if (keccak256(bytes(bet.option)) != keccak256(bytes(option))) {
+                (bool success, uint256 result) = totalLoserAmount.tryAdd(
+                    bet.amount
+                );
+                require(success, "Cannot add totalLoserAmount and bet.amount");
+                totalLoserAmount = result;
+            }
         }
         console.log("totalLoserAmount : %d", totalLoserAmount);
 
-        uint256 totalWinnerAmount = betAmount;
+        uint256 totalWinnerAmount = betAmount; //wei
         for (uint i = 0; i < betKeys.length; i++) {
             Bet memory bet = bets[betKeys[i]];
-            if (keccak256(bytes(bet.option)) == keccak256(bytes(option)))
-                totalWinnerAmount.tryAdd(bet.amount);
+
+            if (keccak256(bytes(bet.option)) == keccak256(bytes(option))) {
+                (bool success, uint256 result) = totalWinnerAmount.tryAdd(
+                    bet.amount
+                );
+                require(success, "Cannot add totalWinnerAmount and bet.amount");
+                totalWinnerAmount = result;
+            }
         }
         console.log("totalWinnerAmount  : %d", totalWinnerAmount);
         uint256 part = Math.mulDiv(
             totalLoserAmount,
-            ODD_DECIMALS,
+            10 ** ODD_DECIMALS,
             totalWinnerAmount
         );
 
-        console.log("part  : %d", part);
+        console.log("part per ODD_DECIMAL : %d", part);
 
         (bool success1, uint256 oddwithoutFees) = part.tryAdd(
             10 ** ODD_DECIMALS
@@ -166,18 +204,16 @@ contract Polymarkteth {
         BET_RESULT result
     ) public {
         require(
-            msg.sender != admin,
-            string(
-                abi.encodePacked(
-                    "Only the admin ",
-                    string(abi.encodePacked(admin)),
-                    " can give the result."
-                )
+            msg.sender == admin,
+            string.concat(
+                "Only the admin ",
+                addressToString(admin),
+                " can give the result."
             )
         );
 
         require(
-            status != BET_RESULT.PENDING,
+            status == BET_RESULT.PENDING,
             string(
                 abi.encodePacked(
                     "Result is already given and bets are resolved : ",
@@ -187,7 +223,7 @@ contract Polymarkteth {
         );
 
         require(
-            result != BET_RESULT.WIN && result != BET_RESULT.DRAW,
+            result == BET_RESULT.WIN || result == BET_RESULT.DRAW,
             "Only give winners or draw, no other choices"
         );
 
@@ -228,5 +264,7 @@ contract Polymarkteth {
                 console.log("bet lost for %s", bet.owner);
             }
         }
+
+        status = result;
     }
 }
