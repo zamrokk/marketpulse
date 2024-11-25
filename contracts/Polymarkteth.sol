@@ -38,8 +38,8 @@ contract Polymarkteth {
 
     event Pong();
 
-    constructor(address payable _admin) payable {
-        admin = _admin;
+    constructor() payable {
+        admin = payable(msg.sender);
     }
 
     /**
@@ -78,7 +78,7 @@ contract Polymarkteth {
     /**
      * Simple Ping
      */
-    function ping() public {
+    function ping() public{
         console.log("Ping");
         emit Pong();
     }

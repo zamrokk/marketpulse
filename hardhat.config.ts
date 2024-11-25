@@ -3,7 +3,7 @@ import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-verify";
 
 const deployerPrivateKey =
-  process.env.DEPLOYER_PRIVATE_KEY ?? "0xa553a333e474927f7e577270bb1381a37fc6051c29adc53e32de206549d7f785"
+  process.env.DEPLOYER_PRIVATE_KEY ?? "0xa553a333e474927f7e577270bb1381a37fc6051c29adc53e32de206549d7f785" 
 
 const config: HardhatUserConfig = {
   solidity: "0.8.24",
@@ -16,6 +16,12 @@ const config: HardhatUserConfig = {
     etherlinkTestnet: {
       url: "https://node.ghostnet.etherlink.com",
       accounts: [deployerPrivateKey],
+      ignition: {
+        maxFeePerGasLimit: 50_000_000_000n, // 50 gwei
+        maxPriorityFeePerGas: 5_000_000_000n, // 5 gwei
+        gasPrice: 50_000_000_000n, // 50 gwei
+        disableFeeBumping: false,
+      },
     },
   },
   etherscan: {

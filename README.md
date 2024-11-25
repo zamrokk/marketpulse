@@ -23,9 +23,12 @@ npm i @openzeppelin/contracts
 ```
 
 
-# Compile
+# Compile  0x77A3b44a7e10eA1AcFc4b048392fc1E8e5Ed8E3C
 
 ```
+rm -rf artifacts
+rm -rf cache
+rm -rf ignition/deployments
 npx hardhat compile
 ```
 
@@ -40,7 +43,7 @@ npx hardhat test
 
 ```
 npx hardhat node
-npx hardhat ignition deploy ignition/modules/Polymarkteth.ts 
+npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --network localhost
 ```
 
 # Deploy on Etherlink
@@ -56,7 +59,7 @@ npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --network etherlink
 Look on the RAW TRACE > VALUE of the creation contract tx to get the input data parameter
 
 ```
-npx hardhat verify --network etherlinkTestnet 0xDcF36D91Db3fC189dF563a2414420d5B367757b6 0x038d7ea4c68000
+npx hardhat verify --network etherlinkTestnet 0x10aE63F20A0dC5d600a2c462FcaBC3bCEaEaD7dF 0x038d7ea4c68000
 ```
 
 (Optional) Cannot add Soucify to check vulnerabilities => "Invalid chainIds: 128123"
@@ -66,4 +69,59 @@ npx hardhat verify --network etherlinkTestnet 0xDcF36D91Db3fC189dF563a2414420d5B
     // Doesn't need an API key
     enabled: true
   }
+```
+
+# Frontend
+
+
+```
+deno run -A npm:create-vite@latest
+npm i viem
+npm i @metamask/providers
+```
+
+
+## viem file for etherlink
+
+```
+mkdir ./src/config
+touch ./src/config/viem.ts
+
+mkdir ./src/utils
+touch ./src/utils/errors.ts
+```
+
+```TypeScript
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { etherlinkTestnet } from 'viem/chains'
+
+export const publicClient = createPublicClient({
+  chain: etherlinkTestnet,
+  transport: http()
+})
+
+export const walletClient = createWalletClient({
+  chain: etherlinkTestnet,
+  transport: http()
+})
+```
+
+```TypeScript
+export function handleViemError(error: Error) {
+  if (error.message.includes('user rejected')) {
+    return 'Transaction was rejected by user'
+  }
+  if (error.message.includes('insufficient funds')) {
+    return 'Insufficient funds for transaction'
+  }
+  return 'Transaction failed. Please try again.'
+}
+```
+
+## ABI
+
+copy the abi on src folder
+
+```
+import abi from "./Polymarkteth.json";
 ```

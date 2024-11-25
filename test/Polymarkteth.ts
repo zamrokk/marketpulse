@@ -43,7 +43,7 @@ describe("Polymarkteth", function () {
     ]);
 
     const polymarktethContract = await hre.viem.deployContract("Polymarkteth", [
-      owner.account.address,
+     
     ]);
 
     const publicClient = await hre.viem.getPublicClient();
