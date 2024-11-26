@@ -60,7 +60,7 @@ export default function App() {
     return (
       <span style={{ alignContent: "center", paddingLeft: 100 }}>
         <button onClick={ping}>Ping </button>
-        {error ? <>&#128994;</> : <>&#128308;</>}
+        {!error || error === "" ? <>&#128994;</> : <>&#128308;</>}
       </span>
     );
   };
