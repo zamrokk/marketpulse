@@ -59,7 +59,7 @@ npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --network etherlink
 Look on the RAW TRACE > VALUE of the creation contract tx to get the input data parameter
 
 ```
-npx hardhat verify --network etherlinkTestnet 0x10aE63F20A0dC5d600a2c462FcaBC3bCEaEaD7dF 0x038d7ea4c68000
+npx hardhat verify --network etherlinkTestnet <CONTRACT_ADDRESS> 
 ```
 
 (Optional) Cannot add Soucify to check vulnerabilities => "Invalid chainIds: 128123"

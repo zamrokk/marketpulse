@@ -1,19 +1,32 @@
+import BigNumber from "bignumber.js";
 import { useEffect, useState } from "react";
 import {
+  Abi,
   Account,
+  Address,
   createPublicClient,
   createWalletClient,
   custom,
   formatEther,
   http,
+  parseEther,
   PublicClient,
-  WalletClient
+  UrlRequiredError,
+  WalletClient,
 } from "viem";
 import "./App.css";
 
 import { etherlinkTestnet } from "viem/chains";
+import { extractErrorDetails } from "./DecodeEvmTransactionLogsArgs";
 
 const CONTRACT_ADDRESS = "0x9e5b3F152770319a5a0Ac82E81C0F23E58136bB1" as const;
+
+type Bet = {
+  id: bigint;
+  owner: Address;
+  option: string;
+  amount: bigint; //wei
+};
 
 export default function App() {
   const [abi, setAbi] = useState<any[]>([]);
@@ -26,8 +39,12 @@ export default function App() {
 
   const [error, setError] = useState("");
 
-  const Ping = () => {
+  const [betKeys, setBetKeys] = useState<bigint[]>([]);
+  const [bets, setBets] = useState<Bet[]>([]);
 
+  const [options, setOptions] = useState<Map<string, bigint>>(new Map());
+
+  const Ping = () => {
     const ping = async () => {
       try {
         if (!walletClient?.account) {
@@ -65,6 +82,59 @@ export default function App() {
     );
   };
 
+  const loadStorage = async (abi: Abi) => {
+    try {
+      if (!walletClient?.account) {
+        console.error("No account", walletClient?.account);
+        return;
+      }
+
+      const betKeys = (await publicClient!.readContract({
+        address: CONTRACT_ADDRESS,
+        abi,
+        functionName: "getBetKeys",
+        args: [],
+      })) as bigint[];
+      setBetKeys(betKeys);
+      console.log("betKeys", betKeys);
+
+      const bets: Bet[] = await Promise.all(
+        betKeys.map(
+          async (betKey) =>
+            publicClient!.readContract({
+              address: CONTRACT_ADDRESS,
+              abi,
+              functionName: "getBets",
+              args: [betKey],
+            }) as Promise<Bet>
+        )
+      );
+
+      setBets(bets);
+      console.log("bets", bets);
+
+      let newOptions = new Map()
+      setOptions(newOptions);
+    bets.forEach((bet) => {
+      if (newOptions.has(bet.option)) {
+        newOptions.set(bet.option, newOptions.get(bet.option)! + bet.amount); //acc
+      } else {
+        newOptions.set(bet.option, bet.amount);
+      }
+    });
+    setOptions(newOptions);
+    console.log("options", newOptions);
+    } catch (error) {
+      const errorParsed = extractErrorDetails(error, abi);
+      setError(errorParsed.message);
+    }
+
+    /*FIXME
+  function getBets(uint256 betId) public view returns (Bet memory bet) {
+      return bets[betId];
+  }*/
+  };
+
   useEffect(() => {
     (async () => {
       if (address) {
@@ -75,13 +145,17 @@ export default function App() {
         );
 
         const abi = await (await fetch("Polymarkteth.json")).json();
-       // console.log("abi", abi.abi);
+        // console.log("abi", abi.abi);
         setAbi(abi.abi);
+
+        await loadStorage(abi.abi);
       } else {
         console.log("Address is null");
       }
     })();
   }, [address]);
+
+
 
   async function connectWallet() {
     // Check if ethereum object exists (browser wallet like MetaMask)
@@ -128,17 +202,11 @@ export default function App() {
   }
 
   const BetFunction = () => {
-
-    const [amount, setAmount] = useState(0);
+    const [amount, setAmount] = useState<number>(0); //in Ether decimals
     const [option, setOption] = useState("trump");
 
     const runFunction = async () => {
       try {
-        const body = {
-          option,
-          amount,
-        };
-
         if (!walletClient?.account) {
           console.error("No account", walletClient?.account);
           return;
@@ -149,7 +217,8 @@ export default function App() {
           address: CONTRACT_ADDRESS,
           abi,
           functionName: "bet",
-          args: [option, amount],
+          args: [option, parseEther(amount.toString())],
+          value: parseEther(amount.toString()),
         });
 
         const hash = await walletClient!.writeContract(request);
@@ -167,19 +236,12 @@ export default function App() {
           gasUsed: receipt.gasUsed,
         });
 
-        // Additional verification
-        const blockConfirmations = await publicClient!.getBlockNumber();
-        const transactionConfirmations =
-          blockConfirmations - receipt.blockNumber;
+        await loadStorage(abi);
 
-          setError("");
+        setError("");
       } catch (error) {
-        console.error("ERROR", error);
-        setError(
-          typeof error === "string"
-            ? error
-            : (error as Error).message + "\n" + (error as Error).stack
-        );
+        const errorParsed = extractErrorDetails(error, abi);
+        setError(errorParsed.message);
       }
     };
 
@@ -205,7 +267,7 @@ export default function App() {
         />
 
         <hr />
-        {address?<button onClick={runFunction}>Bet</button>:""}
+        {address ? <button onClick={runFunction}>Bet</button> : ""}
 
         <table style={{ fontWeight: "normal", width: "100%" }}>
           <tr>
@@ -234,26 +296,19 @@ export default function App() {
           {!address ? (
             <button onClick={connectWallet}>Connect Wallet</button>
           ) : (
-            
-              <div style={{ alignContent: "flex-end", marginLeft: "auto" }}>
-                Cash : XTZ {formatEther(balance)}
-               
-                
-                <div className="chip">
-                  <img
-                    src="https://cdn.britannica.com/66/226766-138-235EFD92/who-is-President-Joe-Biden.jpg?w=800&h=450&c=crop"
-                    alt="Person"
-                    width="96"
-                    height="96"
-                  />
-                   {address}
-
-
-                </div>
-                <button onClick={disconnectWallet}>Disconnect Wallet</button>
-
+            <div style={{ alignContent: "flex-end", marginLeft: "auto" }}>
+              Cash : XTZ {formatEther(balance)}
+              <div className="chip">
+                <img
+                  src="https://cdn.britannica.com/66/226766-138-235EFD92/who-is-President-Joe-Biden.jpg?w=800&h=450&c=crop"
+                  alt="Person"
+                  width="96"
+                  height="96"
+                />
+                {address}
               </div>
-           
+              <button onClick={disconnectWallet}>Disconnect Wallet</button>
+            </div>
           )}
         </span>
       </header>
@@ -276,31 +331,34 @@ export default function App() {
               <th>Outcome</th>
               <th>% chance</th>
             </tr>
-
-            <tr>
-              <td className="tdTable">
-                <div className="picDiv">
-                  <img
-                    style={{ objectFit: "cover", height: "inherit" }}
-                    src="https://polymarket.com/_next/image?url=https%3A%2F%2Fpolymarket-upload.s3.us-east-2.amazonaws.com%2Fwill-donald-trump-win-the-2024-us-presidential-election-c83f01bb-5089-4222-9347-3f12673b6a48.png&w=1018&q=100"
-                  ></img>
-                </div>
-                Donald Trump
-              </td>
-              <td>59.5%</td>
-            </tr>
-            <tr>
-              <td className="tdTable">
-                <div className="picDiv">
-                  <img
-                    style={{ objectFit: "cover", height: "inherit" }}
-                    src="https://polymarket.com/_next/image?url=https%3A%2F%2Fpolymarket-upload.s3.us-east-2.amazonaws.com%2Fwill-kamala-harris-win-the-2024-us-presidential-election-21483ac3-94a5-4efd-b89e-05cdca69753f.png&w=1018&q=100"
-                  ></img>
-                </div>
-                Kamala Harris
-              </td>
-              <td>40.3%</td>
-            </tr>
+            {options && options.size > 0
+              ? [...options.entries()].map(([option, amount]) => (
+                  <tr key={option}>
+                    <td className="tdTable">
+                      <div className="picDiv">
+                        <img
+                          style={{ objectFit: "cover", height: "inherit" }}
+                          src={"./" + option + ".webp"}
+                        ></img>
+                      </div>
+                      {option}
+                    </td>
+                    <td>
+                      {new BigNumber(amount.toString())
+                        .div(
+                          new BigNumber(
+                            [...options.values()]
+                              .reduce((acc, newValue) => acc + newValue, 0n)
+                              .toString()
+                          )
+                        )
+                        .multipliedBy(100)
+                        .toString()}
+                      %
+                    </td>
+                  </tr>
+                ))
+              : ""}
           </table>
         </div>
 
@@ -330,7 +388,7 @@ export default function App() {
           value={error}
         ></textarea>
 
-        {address?<Ping />:""}
+        {address ? <Ping /> : ""}
       </footer>
     </>
   );

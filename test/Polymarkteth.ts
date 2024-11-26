@@ -114,7 +114,7 @@ describe("Polymarkteth", function () {
 
       console.log("should return 200");
 
-      const betTrump1IdHash = await polymarktethContract.write.placeBet(
+      const betTrump1IdHash = await polymarktethContract.write.bet(
         ["trump", parseEther("1")],
         { value: parseEther("1"), gasPrice: 0n }
       );
@@ -160,7 +160,7 @@ describe("Polymarkteth", function () {
         "0x0",
       ]);
 
-      const betKamala2IdHash = await polymarktethContract.write.placeBet(
+      const betKamala2IdHash = await polymarktethContract.write.bet(
         ["kamala", parseEther("2")],
         { value: parseEther("2"), account: bob.account.address, gasPrice: 0n }
       );
