@@ -7,7 +7,7 @@ import { parseEther } from "viem";
 const PolymarktethModule = buildModule("PolymarktethModule", (m) => {
   const PolymarktethContract = m.contract("Polymarkteth", []);
 
-  //m.call(PolymarktethContract, "ping", []);
+  m.call(PolymarktethContract, "ping", []);
 
   return { PolymarktethContract };
 });

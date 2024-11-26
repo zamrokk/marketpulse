@@ -16,12 +16,12 @@ const config: HardhatUserConfig = {
     etherlinkTestnet: {
       url: "https://node.ghostnet.etherlink.com",
       accounts: [deployerPrivateKey],
-      ignition: {
+      /*ignition: {
         maxFeePerGasLimit: 50_000_000_000n, // 50 gwei
         maxPriorityFeePerGas: 5_000_000_000n, // 5 gwei
         gasPrice: 50_000_000_000n, // 50 gwei
         disableFeeBumping: false,
-      },
+      },*/
     },
   },
   etherscan: {

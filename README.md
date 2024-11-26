@@ -23,7 +23,7 @@ npm i @openzeppelin/contracts
 ```
 
 
-# Compile  0x77A3b44a7e10eA1AcFc4b048392fc1E8e5Ed8E3C
+# Compile  
 
 ```
 rm -rf artifacts
@@ -46,7 +46,7 @@ npx hardhat node
 npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --network localhost
 ```
 
-# Deploy on Etherlink
+# Deploy on Etherlink 0x9e5b3F152770319a5a0Ac82E81C0F23E58136bB1
 
 Update hardhat config file with https://docs.etherlink.com/building-on-etherlink/development-toolkits
 

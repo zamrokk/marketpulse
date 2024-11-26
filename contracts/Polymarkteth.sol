@@ -100,7 +100,7 @@ contract Polymarkteth {
     /**
      * place bets and returns the betId
      */
-    function placeBet(
+    function bet(
         string calldata selection,
         uint256 odds
     ) public payable returns (uint256) {
