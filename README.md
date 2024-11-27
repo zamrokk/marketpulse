@@ -51,6 +51,7 @@ npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --network localhost
 Update hardhat config file with https://docs.etherlink.com/building-on-etherlink/development-toolkits
 
 
+
 ```
 npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --network etherlinkTestnet
 ```
