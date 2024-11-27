@@ -19,7 +19,7 @@ import "./App.css";
 import { etherlinkTestnet } from "viem/chains";
 import { extractErrorDetails } from "./DecodeEvmTransactionLogsArgs";
 
-const CONTRACT_ADDRESS = "0x9e5b3F152770319a5a0Ac82E81C0F23E58136bB1" as const;
+const CONTRACT_ADDRESS = "0xE7A14C9815233AB3414811C7839ceeB3f7f40D4D" as const;
 
 type Bet = {
   id: bigint;
@@ -27,6 +27,13 @@ type Bet = {
   option: string;
   amount: bigint; //wei
 };
+
+//crap copy pasta from Solidity code
+enum BET_RESULT {
+  WIN = 0,
+  DRAW = 1,
+  PENDING = 2,
+}
 
 export default function App() {
   const [abi, setAbi] = useState<any[]>([]);
@@ -41,7 +48,9 @@ export default function App() {
 
   const [betKeys, setBetKeys] = useState<bigint[]>([]);
   const [bets, setBets] = useState<Bet[]>([]);
-  const [fees,setFees] = useState<number>(0);
+  const [fees, setFees] = useState<number>(0);
+  const [status, setStatus] = useState<BET_RESULT>(BET_RESULT.PENDING);
+  const [winner, setWinner] = useState<string | undefined>();
 
   const [options, setOptions] = useState<Map<string, bigint>>(new Map());
 
@@ -90,6 +99,23 @@ export default function App() {
         return;
       }
 
+      const status = (await publicClient!.readContract({
+        address: CONTRACT_ADDRESS,
+        abi,
+        functionName: "status",
+        args: [],
+      })) as BET_RESULT;
+      setStatus(status);
+      console.log("status", status);
+
+      const winner = (await publicClient!.readContract({
+        address: CONTRACT_ADDRESS,
+        abi,
+        functionName: "winner",
+        args: [],
+      })) as string | undefined;
+      setWinner(winner);
+      console.log("winner", winner);
 
       const fees = (await publicClient!.readContract({
         address: CONTRACT_ADDRESS,
@@ -97,9 +123,8 @@ export default function App() {
         functionName: "FEES",
         args: [],
       })) as bigint;
-      setFees(Number(fees)/100);
+      setFees(Number(fees) / 100);
       console.log("fees", fees);
-
 
       const betKeys = (await publicClient!.readContract({
         address: CONTRACT_ADDRESS,
@@ -233,13 +258,12 @@ export default function App() {
           hash,
         });
 
-        console.log("Transaction Details:", {
-          hash: hash,
-          isValidHash: hash && hash.startsWith("0x") && hash.length === 66,
-          status: receipt.status,
-          blockNumber: receipt.blockNumber,
-          gasUsed: receipt.gasUsed,
-        });
+        //wait for tx to be included on a block
+        const tx = await publicClient!.waitForTransactionReceipt({ 
+          hash
+        })
+
+        console.log("Transaction Details:",tx);
 
         await loadStorage(abi);
 
@@ -251,27 +275,36 @@ export default function App() {
     };
 
     const calculateOdds = (option: string, amount?: bigint): BigNumber => {
+
+      //check option exists
+      if(!options.has(option))return new BigNumber(0);
+
       console.log(
         "actuel",
-        options && options.size>0?new BigNumber(options.get(option)!.toString()).toString():0,
+        options && options.size > 0
+          ? new BigNumber(options.get(option)!.toString()).toString()
+          : 0,
         "total",
         new BigNumber(
-          [...options.values()].reduce(
-            (acc, newValue) => acc + newValue,
-            amount ? amount : 0n
-          ).toString()
+          [...options.values()]
+            .reduce((acc, newValue) => acc + newValue, amount ? amount : 0n)
+            .toString()
         ).toString()
       );
 
-      return options && options.size>0
+      return options && options.size > 0
         ? new BigNumber(options.get(option)!.toString(10))
-            .plus(amount?new BigNumber(amount.toString(10)):new BigNumber(0))
+            .plus(
+              amount ? new BigNumber(amount.toString(10)) : new BigNumber(0)
+            )
             .div(
               new BigNumber(
-                [...options.values()].reduce(
-                  (acc, newValue) => acc + newValue,
-                  amount ? amount : 0n
-                ).toString(10)
+                [...options.values()]
+                  .reduce(
+                    (acc, newValue) => acc + newValue,
+                    amount ? amount : 0n
+                  )
+                  .toString(10)
               )
             )
             .plus(1)
@@ -281,54 +314,120 @@ export default function App() {
 
     return (
       <span style={{ alignContent: "center", width: "100%" }}>
-        <h3>Choose candidate</h3>
+        {status && status === BET_RESULT.PENDING ? (
+          <>
+            <h3>Choose candidate</h3>
 
-        <select
-          name="options"
-          onChange={(e) => setOption(e.target.value)}
-          value={option}
-          defaultValue="trump"
-        >
-          <option value="trump">Donald Trump</option>
-          <option value="harris">Kamala Harris</option>
-        </select>
-        <h3>Amount</h3>
-        <input
-          type="number"
-          id="amount"
-          name="amount"
-          required
-          onChange={(e) => {if(e.target.value && !isNaN(Number(e.target.value))){
-            //console.log("e.target.value",e.target.value)
-            setAmount(new BigNumber(e.target.value))}}}
-        />
+            <select
+              name="options"
+              onChange={(e) => setOption(e.target.value)}
+              value={option}
+              defaultValue="trump"
+            >
+              <option value="trump">Donald Trump</option>
+              <option value="harris">Kamala Harris</option>
+            </select>
+            <h3>Amount</h3>
+            <input
+              type="number"
+              id="amount"
+              name="amount"
+              required
+              onChange={(e) => {
+                if (e.target.value && !isNaN(Number(e.target.value))) {
+                  //console.log("e.target.value",e.target.value)
+                  setAmount(new BigNumber(e.target.value));
+                }
+              }}
+            />
 
-        <hr />
-        {address ? <button onClick={runFunction}>Bet</button> : ""}
+            <hr />
+            {address ? <button onClick={runFunction}>Bet</button> : ""}
 
-        <table style={{ fontWeight: "normal", width: "100%" }}>
-          <tr>
-            <td style={{ textAlign: "left" }}>Avg price (decimal)</td>
-            <td style={{ textAlign: "right" }}>
-              {options && options.size > 0
-                ? calculateOdds(option, parseEther(amount.toString(10))).toFixed(3).toString()
-                : 0}
-            </td>
-          </tr>
-         
-          <tr>
-            <td style={{ textAlign: "left" }}>Potential return</td>
-            <td style={{ textAlign: "right" }}>
-              XTZ{" "}
-              {amount ? calculateOdds(option, parseEther(amount.toString(10) )).multipliedBy(amount).toFixed(2).toString() : 0}{" "}
-              ({options && options.size > 0
-                ? calculateOdds(option, parseEther(amount.toString(10))).minus(new BigNumber(1) ).multipliedBy(100).toFixed(2).toString()
-                : 0}%)
-            </td>
-          </tr>
-        </table>
+            <table style={{ fontWeight: "normal", width: "100%" }}>
+              <tr>
+                <td style={{ textAlign: "left" }}>Avg price (decimal)</td>
+                <td style={{ textAlign: "right" }}>
+                  {options && options.size > 0
+                    ? calculateOdds(option, parseEther(amount.toString(10)))
+                        .toFixed(3)
+                        .toString()
+                    : 0}
+                </td>
+              </tr>
+
+              <tr>
+                <td style={{ textAlign: "left" }}>Potential return</td>
+                <td style={{ textAlign: "right" }}>
+                  XTZ{" "}
+                  {amount
+                    ? calculateOdds(option, parseEther(amount.toString(10)))
+                        .multipliedBy(amount)
+                        .toFixed(6)
+                        .toString()
+                    : 0}{" "}
+                  (
+                  {options && options.size > 0
+                    ? calculateOdds(option, parseEther(amount.toString(10)))
+                        .minus(new BigNumber(1))
+                        .multipliedBy(100)
+                        .toFixed(2)
+                        .toString()
+                    : 0}
+                  %)
+                </td>
+              </tr>
+            </table>
+          </>
+        ) : (
+          <>
+            <span style={{ color: "#2D9CDB", fontSize: "1.125rem" }}>
+              Outcome: {BET_RESULT[status]}
+            </span>
+            {winner ? <div style={{ color: "#858D92" }}>{winner}</div> : ""}
+          </>
+        )}
       </span>
     );
+  };
+
+  const resolve = async (option: string) => {
+    try {
+      if (!walletClient?.account) {
+        console.error("No account", walletClient?.account);
+        return;
+      }
+
+      const { request } = await publicClient!.simulateContract({
+        account: walletClient?.account!,
+        address: CONTRACT_ADDRESS,
+        abi,
+        functionName: "resolveResult",
+        args: [option, BET_RESULT.WIN],
+      });
+
+      const hash = await walletClient!.writeContract(request);
+
+      // Check transaction receipt
+      const receipt = await publicClient!.getTransactionReceipt({
+        hash,
+      });
+
+      console.log("Transaction Details:", {
+        hash: hash,
+        isValidHash: hash && hash.startsWith("0x") && hash.length === 66,
+        status: receipt.status,
+        blockNumber: receipt.blockNumber,
+        gasUsed: receipt.gasUsed,
+      });
+
+      await loadStorage(abi);
+
+      setError("");
+    } catch (error) {
+      const errorParsed = extractErrorDetails(error, abi);
+      setError(errorParsed.message);
+    }
   };
 
   return (
@@ -374,6 +473,7 @@ export default function App() {
             <tr>
               <th>Outcome</th>
               <th>% chance</th>
+              <th>action</th>
             </tr>
             {options && options.size > 0
               ? [...options.entries()].map(([option, amount]) => (
@@ -397,8 +497,12 @@ export default function App() {
                           )
                         )
                         .multipliedBy(100)
-                        .toString()}
+                        .toFixed(2)}
                       %
+                    </td>
+
+                    <td>{status && status === BET_RESULT.PENDING ? 
+                      <button onClick={() => resolve(option)}>Winner</button>: ""}
                     </td>
                   </tr>
                 ))

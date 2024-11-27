@@ -35,6 +35,7 @@ contract Polymarkteth {
     mapping(uint256 => Bet) public bets; //1
     uint256[] public betKeys; //2
     BET_RESULT public status = BET_RESULT.PENDING; //3
+    string public winner; //4
 
     event Pong();
 
@@ -241,6 +242,7 @@ contract Polymarkteth {
                 );
                 console.log("earnings : %d for %s", earnings, bet.owner);
                 bet.owner.transfer(earnings);
+                winner = optionResult;
             } else if (result == BET_RESULT.DRAW) {
                 //GIVE BACK MONEY - FEES
 

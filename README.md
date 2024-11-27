@@ -46,7 +46,7 @@ npx hardhat node
 npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --network localhost
 ```
 
-# Deploy on Etherlink 0x9e5b3F152770319a5a0Ac82E81C0F23E58136bB1
+# Deploy on Etherlink 0xE7A14C9815233AB3414811C7839ceeB3f7f40D4D
 
 Update hardhat config file with https://docs.etherlink.com/building-on-etherlink/development-toolkits
 
