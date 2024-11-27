@@ -1,9 +1,15 @@
 import type { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-verify";
+import {vars} from "hardhat/config";
+
+
+if(!vars.has("DEPLOYER_PRIVATE_KEY") ){
+  console.error("Missing env var DEPLOYER_PRIVATE_KEY");
+}
 
 const deployerPrivateKey =
-  process.env.DEPLOYER_PRIVATE_KEY ?? "0xa553a333e474927f7e577270bb1381a37fc6051c29adc53e32de206549d7f785" 
+vars.get("DEPLOYER_PRIVATE_KEY") 
 
 const config: HardhatUserConfig = {
   solidity: "0.8.24",
