@@ -41,6 +41,7 @@ export default function App() {
 
   const [betKeys, setBetKeys] = useState<bigint[]>([]);
   const [bets, setBets] = useState<Bet[]>([]);
+  const [fees,setFees] = useState<number>(0);
 
   const [options, setOptions] = useState<Map<string, bigint>>(new Map());
 
@@ -89,6 +90,17 @@ export default function App() {
         return;
       }
 
+
+      const fees = (await publicClient!.readContract({
+        address: CONTRACT_ADDRESS,
+        abi,
+        functionName: "FEES",
+        args: [],
+      })) as bigint;
+      setFees(Number(fees)/100);
+      console.log("fees", fees);
+
+
       const betKeys = (await publicClient!.readContract({
         address: CONTRACT_ADDRESS,
         abi,
@@ -113,26 +125,21 @@ export default function App() {
       setBets(bets);
       console.log("bets", bets);
 
-      let newOptions = new Map()
+      let newOptions = new Map();
       setOptions(newOptions);
-    bets.forEach((bet) => {
-      if (newOptions.has(bet.option)) {
-        newOptions.set(bet.option, newOptions.get(bet.option)! + bet.amount); //acc
-      } else {
-        newOptions.set(bet.option, bet.amount);
-      }
-    });
-    setOptions(newOptions);
-    console.log("options", newOptions);
+      bets.forEach((bet) => {
+        if (newOptions.has(bet.option)) {
+          newOptions.set(bet.option, newOptions.get(bet.option)! + bet.amount); //acc
+        } else {
+          newOptions.set(bet.option, bet.amount);
+        }
+      });
+      setOptions(newOptions);
+      console.log("options", newOptions);
     } catch (error) {
       const errorParsed = extractErrorDetails(error, abi);
       setError(errorParsed.message);
     }
-
-    /*FIXME
-  function getBets(uint256 betId) public view returns (Bet memory bet) {
-      return bets[betId];
-  }*/
   };
 
   useEffect(() => {
@@ -154,8 +161,6 @@ export default function App() {
       }
     })();
   }, [address]);
-
-
 
   async function connectWallet() {
     // Check if ethereum object exists (browser wallet like MetaMask)
@@ -202,7 +207,7 @@ export default function App() {
   }
 
   const BetFunction = () => {
-    const [amount, setAmount] = useState<number>(0); //in Ether decimals
+    const [amount, setAmount] = useState<BigNumber>(BigNumber(0)); //in Ether decimals
     const [option, setOption] = useState("trump");
 
     const runFunction = async () => {
@@ -217,8 +222,8 @@ export default function App() {
           address: CONTRACT_ADDRESS,
           abi,
           functionName: "bet",
-          args: [option, parseEther(amount.toString())],
-          value: parseEther(amount.toString()),
+          args: [option, parseEther(amount.toString(10))],
+          value: parseEther(amount.toString(10)),
         });
 
         const hash = await walletClient!.writeContract(request);
@@ -245,6 +250,35 @@ export default function App() {
       }
     };
 
+    const calculateOdds = (option: string, amount?: bigint): BigNumber => {
+      console.log(
+        "actuel",
+        options && options.size>0?new BigNumber(options.get(option)!.toString()).toString():0,
+        "total",
+        new BigNumber(
+          [...options.values()].reduce(
+            (acc, newValue) => acc + newValue,
+            amount ? amount : 0n
+          ).toString()
+        ).toString()
+      );
+
+      return options && options.size>0
+        ? new BigNumber(options.get(option)!.toString(10))
+            .plus(amount?new BigNumber(amount.toString(10)):new BigNumber(0))
+            .div(
+              new BigNumber(
+                [...options.values()].reduce(
+                  (acc, newValue) => acc + newValue,
+                  amount ? amount : 0n
+                ).toString(10)
+              )
+            )
+            .plus(1)
+            .minus(fees)
+        : new BigNumber(0);
+    };
+
     return (
       <span style={{ alignContent: "center", width: "100%" }}>
         <h3>Choose candidate</h3>
@@ -253,6 +287,7 @@ export default function App() {
           name="options"
           onChange={(e) => setOption(e.target.value)}
           value={option}
+          defaultValue="trump"
         >
           <option value="trump">Donald Trump</option>
           <option value="harris">Kamala Harris</option>
@@ -263,7 +298,9 @@ export default function App() {
           id="amount"
           name="amount"
           required
-          onChange={(e) => setAmount(Number(e.target.value))}
+          onChange={(e) => {if(e.target.value && !isNaN(Number(e.target.value))){
+            //console.log("e.target.value",e.target.value)
+            setAmount(new BigNumber(e.target.value))}}}
         />
 
         <hr />
@@ -271,16 +308,23 @@ export default function App() {
 
         <table style={{ fontWeight: "normal", width: "100%" }}>
           <tr>
-            <td style={{ textAlign: "left" }}>Avg price</td>
-            <td style={{ textAlign: "right" }}>60.6¢</td>
+            <td style={{ textAlign: "left" }}>Avg price (decimal)</td>
+            <td style={{ textAlign: "right" }}>
+              {options && options.size > 0
+                ? calculateOdds(option, parseEther(amount.toString(10))).toFixed(3).toString()
+                : 0}
+            </td>
           </tr>
-          <tr>
-            <td style={{ textAlign: "left" }}>Shares</td>
-            <td style={{ textAlign: "right" }}>16.50</td>
-          </tr>
+         
           <tr>
             <td style={{ textAlign: "left" }}>Potential return</td>
-            <td style={{ textAlign: "right" }}>$16.50 (65.01%)</td>
+            <td style={{ textAlign: "right" }}>
+              XTZ{" "}
+              {amount ? calculateOdds(option, parseEther(amount.toString(10) )).multipliedBy(amount).toFixed(2).toString() : 0}{" "}
+              ({options && options.size > 0
+                ? calculateOdds(option, parseEther(amount.toString(10))).minus(new BigNumber(1) ).multipliedBy(100).toFixed(2).toString()
+                : 0}%)
+            </td>
           </tr>
         </table>
       </span>
