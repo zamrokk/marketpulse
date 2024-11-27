@@ -19,7 +19,7 @@ import "./App.css";
 import { etherlinkTestnet } from "viem/chains";
 import { extractErrorDetails } from "./DecodeEvmTransactionLogsArgs";
 
-const CONTRACT_ADDRESS = "0xE7A14C9815233AB3414811C7839ceeB3f7f40D4D" as const;
+const CONTRACT_ADDRESS = "0xe2F903f3eBd77b7EC347932Ce5E53AD1961Eb002" as const;
 
 type Bet = {
   id: bigint;
