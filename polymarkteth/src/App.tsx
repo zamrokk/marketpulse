@@ -41,6 +41,8 @@ const wallets = [
   createWallet("io.rabby"),
   createWallet("io.zerion.wallet"),
   createWallet("com.trustwallet.app"),
+  createWallet("global.safe"),
+
 ];
 
 //crap copy pasta from Solidity code

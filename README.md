@@ -92,32 +92,6 @@ mkdir ./src/utils
 touch ./src/utils/errors.ts
 ```
 
-```TypeScript
-import { createPublicClient, createWalletClient, http } from 'viem'
-import { etherlinkTestnet } from 'viem/chains'
-
-export const publicClient = createPublicClient({
-  chain: etherlinkTestnet,
-  transport: http()
-})
-
-export const walletClient = createWalletClient({
-  chain: etherlinkTestnet,
-  transport: http()
-})
-```
-
-```TypeScript
-export function handleViemError(error: Error) {
-  if (error.message.includes('user rejected')) {
-    return 'Transaction was rejected by user'
-  }
-  if (error.message.includes('insufficient funds')) {
-    return 'Insufficient funds for transaction'
-  }
-  return 'Transaction failed. Please try again.'
-}
-```
 
 ## ABI
 
