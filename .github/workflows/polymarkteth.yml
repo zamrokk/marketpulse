@@ -21,7 +21,7 @@ jobs:
           node-version: 18
           cache: 'npm'
       - run: npm ci
-      - run: npx hardhat vars set DEPLOYER_PRIVATE_KEY $DEPLOYER_PRIVATE_KEY
+      - run: DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY npx hardhat vars set DEPLOYER_PRIVATE_KEY 
       - run: npx hardhat compile
       - run: npx hardhat test
       - name: Cache hardhat-artifacts
