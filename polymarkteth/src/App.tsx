@@ -1,32 +1,47 @@
+import { Polymarkteth, Polymarkteth__factory } from "./typechain-types";
+
 import BigNumber from "bignumber.js";
 import { useEffect, useState } from "react";
-import {
-  Abi,
-  Account,
-  Address,
-  createPublicClient,
-  createWalletClient,
-  custom,
-  formatEther,
-  http,
-  parseEther,
-  PublicClient,
-  UrlRequiredError,
-  WalletClient,
-} from "viem";
 import "./App.css";
 
+import {
+  defineChain,
+  getContract,
+  prepareContractCall,
+  readContract,
+  resolveMethod,
+  sendAndConfirmTransaction,
+  sendTransaction,
+  simulateTransaction,
+  ThirdwebClient,
+  waitForReceipt,
+} from "thirdweb";
+import {
+  ConnectButton,
+  useActiveAccount,
+  useActiveWallet,
+  useDisconnect,
+} from "thirdweb/react";
+import { createWallet, inAppWallet } from "thirdweb/wallets";
 import { etherlinkTestnet } from "viem/chains";
+import { BaseError, parseEther } from "viem";
 import { extractErrorDetails } from "./DecodeEvmTransactionLogsArgs";
 
 const CONTRACT_ADDRESS = "0xe2F903f3eBd77b7EC347932Ce5E53AD1961Eb002" as const;
 
-type Bet = {
-  id: bigint;
-  owner: Address;
-  option: string;
-  amount: bigint; //wei
-};
+const wallets = [
+  inAppWallet({
+    auth: {
+      options: ["google", "email", "passkey", "phone"],
+    },
+  }),
+  createWallet("io.metamask"),
+  createWallet("com.coinbase.wallet"),
+  createWallet("me.rainbow"),
+  createWallet("io.rabby"),
+  createWallet("io.zerion.wallet"),
+  createWallet("com.trustwallet.app"),
+];
 
 //crap copy pasta from Solidity code
 enum BET_RESULT {
@@ -35,201 +50,187 @@ enum BET_RESULT {
   PENDING = 2,
 }
 
-export default function App() {
-  const [abi, setAbi] = useState<any[]>([]);
+interface AppProps {
+  thirdwebClient: ThirdwebClient;
+}
 
-  const [walletClient, setWalletClient] = useState<WalletClient | null>(null);
-  const [publicClient, setPublicClient] = useState<PublicClient | null>(null);
-  const [address, setAddress] = useState<`0x${string}` | null>(null);
+export default function App({ thirdwebClient }: AppProps) {
+  console.log("*************App");
 
-  const [balance, setBalance] = useState<bigint>(BigInt(0));
-
-  const [error, setError] = useState("");
-
-  const [betKeys, setBetKeys] = useState<bigint[]>([]);
-  const [bets, setBets] = useState<Bet[]>([]);
-  const [fees, setFees] = useState<number>(0);
-  const [status, setStatus] = useState<BET_RESULT>(BET_RESULT.PENDING);
-  const [winner, setWinner] = useState<string | undefined>();
+  const account = useActiveAccount();
+  const wallet = useActiveWallet();
+  const { disconnect } = useDisconnect();
 
   const [options, setOptions] = useState<Map<string, bigint>>(new Map());
 
-  const Ping = () => {
-    const ping = async () => {
-      try {
-        if (!walletClient?.account) {
-          console.error("No account", walletClient?.account);
-          return;
-        }
+  const [error, setError] = useState<string>("");
 
-        const { request } = await publicClient!.simulateContract({
-          account: walletClient?.account!,
+  const [status, setStatus] = useState<BET_RESULT>(BET_RESULT.PENDING);
+  const [winner, setWinner] = useState<string | undefined>(undefined);
+  const [fees, setFees] = useState<number>(0);
+  const [betKeys, setBetKeys] = useState<bigint[]>([]);
+  const [bets, setBets] = useState<Polymarkteth.BetStruct[]>([]);
+
+  const reload = async () => {
+    if (!account?.address) {
+      console.log("No address...");
+    } else {
+      const dataStatus = await readContract({
+        contract: getContract({
+          abi: Polymarkteth__factory.abi,
+          client: thirdwebClient,
+          chain: defineChain(etherlinkTestnet.id),
           address: CONTRACT_ADDRESS,
-          abi,
-          functionName: "ping",
-          args: [],
+        }),
+        method: "status",
+        params: [],
+      });
+
+      const dataWinner = await readContract({
+        contract: getContract({
+          abi: Polymarkteth__factory.abi,
+          client: thirdwebClient,
+          chain: defineChain(etherlinkTestnet.id),
+          address: CONTRACT_ADDRESS,
+        }),
+        method: "winner",
+        params: [],
+      });
+
+      const dataFEES = await readContract({
+        contract: getContract({
+          abi: Polymarkteth__factory.abi,
+          client: thirdwebClient,
+          chain: defineChain(etherlinkTestnet.id),
+          address: CONTRACT_ADDRESS,
+        }),
+        method: "FEES",
+        params: [],
+      });
+
+      const dataBetKeys = await readContract({
+        contract: getContract({
+          abi: Polymarkteth__factory.abi,
+          client: thirdwebClient,
+          chain: defineChain(etherlinkTestnet.id),
+          address: CONTRACT_ADDRESS,
+        }),
+        method: "getBetKeys",
+        params: [],
+      });
+
+      setStatus(dataStatus as unknown as BET_RESULT);
+      setWinner(dataWinner as unknown as string);
+      setFees(Number(dataFEES as unknown as bigint) / 100);
+      setBetKeys(dataBetKeys as unknown as bigint[]);
+
+      console.log(
+        "**********status, winner, fees, betKeys",
+        status,
+        winner,
+        fees,
+        betKeys
+      );
+    }
+  };
+
+  //first call to load data
+  useEffect(() => {
+    (() => reload())();
+  }, [account?.address]);
+
+  //fetch bets
+
+  useEffect(() => {
+    (async () => {
+      if (!betKeys || betKeys.length === 0) {
+        console.log("no dataBetKeys");
+        setBets([]);
+      } else {
+        const bets = await Promise.all(
+          betKeys.map(
+            async (betKey) =>
+              (await readContract({
+                contract: getContract({
+                  abi: Polymarkteth__factory.abi,
+                  client: thirdwebClient,
+                  chain: defineChain(etherlinkTestnet.id),
+                  address: CONTRACT_ADDRESS,
+                }),
+                method: "getBets",
+                params: [betKey],
+              })) as unknown as Polymarkteth.BetStruct
+          )
+        );
+        setBets(bets);
+
+        //fetch options
+        let newOptions = new Map();
+        setOptions(newOptions);
+        bets.forEach((bet) => {
+          if (newOptions.has(bet!.option)) {
+            newOptions.set(
+              bet!.option,
+              newOptions.get(bet!.option)! + bet!.amount
+            ); //acc
+          } else {
+            newOptions.set(bet!.option, bet!.amount);
+          }
+        });
+        setOptions(newOptions);
+        console.log("options", newOptions);
+      }
+    })();
+  }, [betKeys]);
+
+  const Ping = () => {
+    // Comprehensive error handling
+    const handlePing = async () => {
+      try {
+        const preparedContractCall = await prepareContractCall({
+          contract: getContract({
+            abi: Polymarkteth__factory.abi,
+            client: thirdwebClient,
+            chain: defineChain(etherlinkTestnet.id),
+            address: CONTRACT_ADDRESS,
+          }),
+          method: "ping",
+          params: [],
         });
 
-        const result = await walletClient!.writeContract(request);
-        console.log("result", result);
+        console.log("preparedContractCall", preparedContractCall);
+
+        const transaction = await sendTransaction({
+          transaction: preparedContractCall,
+          account: account!,
+        });
+
+        //wait for tx to be included on a block
+        const receipt = await waitForReceipt({
+          client: thirdwebClient,
+          chain: defineChain(etherlinkTestnet.id),
+          transactionHash: transaction.transactionHash,
+        });
+
+        console.log("receipt :", receipt);
 
         setError("");
       } catch (error) {
-        console.error("ERROR", error);
-        setError(
-          typeof error === "string"
-            ? error
-            : (error as Error).message + "\n" + (error as Error).stack
+        const errorParsed = extractErrorDetails(
+          error,
+          Polymarkteth__factory.abi
         );
+        setError(errorParsed.message);
       }
     };
 
     return (
       <span style={{ alignContent: "center", paddingLeft: 100 }}>
-        <button onClick={ping}>Ping </button>
+        <button onClick={handlePing}>Ping</button>
         {!error || error === "" ? <>&#128994;</> : <>&#128308;</>}
       </span>
     );
   };
-
-  const loadStorage = async (abi: Abi) => {
-    try {
-      if (!walletClient?.account) {
-        console.error("No account", walletClient?.account);
-        return;
-      }
-
-      const status = (await publicClient!.readContract({
-        address: CONTRACT_ADDRESS,
-        abi,
-        functionName: "status",
-        args: [],
-      })) as BET_RESULT;
-      setStatus(status);
-      console.log("status", status);
-
-      const winner = (await publicClient!.readContract({
-        address: CONTRACT_ADDRESS,
-        abi,
-        functionName: "winner",
-        args: [],
-      })) as string | undefined;
-      setWinner(winner);
-      console.log("winner", winner);
-
-      const fees = (await publicClient!.readContract({
-        address: CONTRACT_ADDRESS,
-        abi,
-        functionName: "FEES",
-        args: [],
-      })) as bigint;
-      setFees(Number(fees) / 100);
-      console.log("fees", fees);
-
-      const betKeys = (await publicClient!.readContract({
-        address: CONTRACT_ADDRESS,
-        abi,
-        functionName: "getBetKeys",
-        args: [],
-      })) as bigint[];
-      setBetKeys(betKeys);
-      console.log("betKeys", betKeys);
-
-      const bets: Bet[] = await Promise.all(
-        betKeys.map(
-          async (betKey) =>
-            publicClient!.readContract({
-              address: CONTRACT_ADDRESS,
-              abi,
-              functionName: "getBets",
-              args: [betKey],
-            }) as Promise<Bet>
-        )
-      );
-
-      setBets(bets);
-      console.log("bets", bets);
-
-      let newOptions = new Map();
-      setOptions(newOptions);
-      bets.forEach((bet) => {
-        if (newOptions.has(bet.option)) {
-          newOptions.set(bet.option, newOptions.get(bet.option)! + bet.amount); //acc
-        } else {
-          newOptions.set(bet.option, bet.amount);
-        }
-      });
-      setOptions(newOptions);
-      console.log("options", newOptions);
-    } catch (error) {
-      const errorParsed = extractErrorDetails(error, abi);
-      setError(errorParsed.message);
-    }
-  };
-
-  useEffect(() => {
-    (async () => {
-      if (address) {
-        setBalance(
-          await publicClient!.getBalance({
-            address,
-          })
-        );
-
-        const abi = await (await fetch("Polymarkteth.json")).json();
-        // console.log("abi", abi.abi);
-        setAbi(abi.abi);
-
-        await loadStorage(abi.abi);
-      } else {
-        console.log("Address is null");
-      }
-    })();
-  }, [address]);
-
-  async function connectWallet() {
-    // Check if ethereum object exists (browser wallet like MetaMask)
-    if (window.ethereum) {
-      try {
-        // Request account access
-        const accounts = (await window.ethereum.request({
-          method: "eth_requestAccounts",
-        })) as NonNullable<Account[]> | undefined;
-
-        if (accounts && accounts.length > 0) {
-          // Create wallet client
-          const walletClient = createWalletClient({
-            account: accounts[0],
-            chain: etherlinkTestnet,
-            transport: custom(window.ethereum),
-          });
-
-          // Create public client
-          const publicClient = createPublicClient({
-            chain: etherlinkTestnet,
-            transport: http(),
-          });
-
-          // Get connected accounts
-          const [address] = await walletClient.getAddresses();
-
-          setAddress(address);
-          setWalletClient(walletClient);
-          setPublicClient(publicClient);
-        } else {
-          console.error("Cannot find accounts on the wallet");
-        }
-      } catch (error) {
-        console.error("Wallet connection failed", error);
-      }
-    } else {
-      console.error("No Ethereum wallet found");
-    }
-  }
-
-  async function disconnectWallet() {
-    setAddress(null);
-  }
 
   const BetFunction = () => {
     const [amount, setAmount] = useState<BigNumber>(BigNumber(0)); //in Ether decimals
@@ -237,47 +238,49 @@ export default function App() {
 
     const runFunction = async () => {
       try {
-        if (!walletClient?.account) {
-          console.error("No account", walletClient?.account);
-          return;
-        }
-
-        const { request } = await publicClient!.simulateContract({
-          account: walletClient?.account!,
+        const contract = getContract({
+          abi: Polymarkteth__factory.abi,
+          client: thirdwebClient,
+          chain: defineChain(etherlinkTestnet.id),
           address: CONTRACT_ADDRESS,
-          abi,
-          functionName: "bet",
-          args: [option, parseEther(amount.toString(10))],
+        });
+
+        const preparedContractCall = await prepareContractCall({
+          contract,
+          method: "bet",
+          params: [option, parseEther(amount.toString(10))],
           value: parseEther(amount.toString(10)),
         });
 
-        const hash = await walletClient!.writeContract(request);
-
-        // Check transaction receipt
-        const receipt = await publicClient!.getTransactionReceipt({
-          hash,
+        const transaction = await sendTransaction({
+          transaction: preparedContractCall,
+          account: account!,
         });
 
         //wait for tx to be included on a block
-        const tx = await publicClient!.waitForTransactionReceipt({ 
-          hash
-        })
+        const receipt = await waitForReceipt({
+          client: thirdwebClient,
+          chain: defineChain(etherlinkTestnet.id),
+          transactionHash: transaction.transactionHash,
+        });
 
-        console.log("Transaction Details:",tx);
+        console.log("receipt :", receipt);
 
-        await loadStorage(abi);
+        await reload();
 
         setError("");
       } catch (error) {
-        const errorParsed = extractErrorDetails(error, abi);
+        const errorParsed = extractErrorDetails(
+          error,
+          Polymarkteth__factory.abi
+        );
         setError(errorParsed.message);
       }
     };
 
     const calculateOdds = (option: string, amount?: bigint): BigNumber => {
-
       //check option exists
-      if(!options.has(option))return new BigNumber(0);
+      if (!options.has(option)) return new BigNumber(0);
 
       console.log(
         "actuel",
@@ -322,7 +325,6 @@ export default function App() {
               name="options"
               onChange={(e) => setOption(e.target.value)}
               value={option}
-              defaultValue="trump"
             >
               <option value="trump">Donald Trump</option>
               <option value="harris">Kamala Harris</option>
@@ -342,41 +344,43 @@ export default function App() {
             />
 
             <hr />
-            {address ? <button onClick={runFunction}>Bet</button> : ""}
+            {account?.address ? <button onClick={runFunction}>Bet</button> : ""}
 
             <table style={{ fontWeight: "normal", width: "100%" }}>
-              <tr>
-                <td style={{ textAlign: "left" }}>Avg price (decimal)</td>
-                <td style={{ textAlign: "right" }}>
-                  {options && options.size > 0
-                    ? calculateOdds(option, parseEther(amount.toString(10)))
-                        .toFixed(3)
-                        .toString()
-                    : 0}
-                </td>
-              </tr>
+              <tbody>
+                <tr>
+                  <td style={{ textAlign: "left" }}>Avg price (decimal)</td>
+                  <td style={{ textAlign: "right" }}>
+                    {options && options.size > 0
+                      ? calculateOdds(option, parseEther(amount.toString(10)))
+                          .toFixed(3)
+                          .toString()
+                      : 0}
+                  </td>
+                </tr>
 
-              <tr>
-                <td style={{ textAlign: "left" }}>Potential return</td>
-                <td style={{ textAlign: "right" }}>
-                  XTZ{" "}
-                  {amount
-                    ? calculateOdds(option, parseEther(amount.toString(10)))
-                        .multipliedBy(amount)
-                        .toFixed(6)
-                        .toString()
-                    : 0}{" "}
-                  (
-                  {options && options.size > 0
-                    ? calculateOdds(option, parseEther(amount.toString(10)))
-                        .minus(new BigNumber(1))
-                        .multipliedBy(100)
-                        .toFixed(2)
-                        .toString()
-                    : 0}
-                  %)
-                </td>
-              </tr>
+                <tr>
+                  <td style={{ textAlign: "left" }}>Potential return</td>
+                  <td style={{ textAlign: "right" }}>
+                    XTZ{" "}
+                    {amount
+                      ? calculateOdds(option, parseEther(amount.toString(10)))
+                          .multipliedBy(amount)
+                          .toFixed(6)
+                          .toString()
+                      : 0}{" "}
+                    (
+                    {options && options.size > 0
+                      ? calculateOdds(option, parseEther(amount.toString(10)))
+                          .minus(new BigNumber(1))
+                          .multipliedBy(100)
+                          .toFixed(2)
+                          .toString()
+                      : 0}
+                    %)
+                  </td>
+                </tr>
+              </tbody>
             </table>
           </>
         ) : (
@@ -393,39 +397,38 @@ export default function App() {
 
   const resolve = async (option: string) => {
     try {
-      if (!walletClient?.account) {
-        console.error("No account", walletClient?.account);
-        return;
-      }
-
-      const { request } = await publicClient!.simulateContract({
-        account: walletClient?.account!,
-        address: CONTRACT_ADDRESS,
-        abi,
-        functionName: "resolveResult",
-        args: [option, BET_RESULT.WIN],
+      const preparedContractCall = await prepareContractCall({
+        contract: getContract({
+          abi: Polymarkteth__factory.abi,
+          client: thirdwebClient,
+          chain: defineChain(etherlinkTestnet.id),
+          address: CONTRACT_ADDRESS,
+        }),
+        method: "resolveResult",
+        params: [option, BET_RESULT.WIN],
       });
 
-      const hash = await walletClient!.writeContract(request);
+      console.log("preparedContractCall", preparedContractCall);
 
-      // Check transaction receipt
-      const receipt = await publicClient!.getTransactionReceipt({
-        hash,
+      const transaction = await sendTransaction({
+        transaction: preparedContractCall,
+        account: account!,
       });
 
-      console.log("Transaction Details:", {
-        hash: hash,
-        isValidHash: hash && hash.startsWith("0x") && hash.length === 66,
-        status: receipt.status,
-        blockNumber: receipt.blockNumber,
-        gasUsed: receipt.gasUsed,
+      //wait for tx to be included on a block
+      const receipt = await waitForReceipt({
+        client: thirdwebClient,
+        chain: defineChain(etherlinkTestnet.id),
+        transactionHash: transaction.transactionHash,
       });
 
-      await loadStorage(abi);
+      console.log("receipt :", receipt);
+
+      await reload();
 
       setError("");
     } catch (error) {
-      const errorParsed = extractErrorDetails(error, abi);
+      const errorParsed = extractErrorDetails(error, Polymarkteth__factory.abi);
       setError(errorParsed.message);
     }
   };
@@ -436,23 +439,13 @@ export default function App() {
         <span style={{ display: "flex" }}>
           <h1>Polymarktez </h1>
 
-          {!address ? (
-            <button onClick={connectWallet}>Connect Wallet</button>
-          ) : (
-            <div style={{ alignContent: "flex-end", marginLeft: "auto" }}>
-              Cash : XTZ {formatEther(balance)}
-              <div className="chip">
-                <img
-                  src="https://cdn.britannica.com/66/226766-138-235EFD92/who-is-President-Joe-Biden.jpg?w=800&h=450&c=crop"
-                  alt="Person"
-                  width="96"
-                  height="96"
-                />
-                {address}
-              </div>
-              <button onClick={disconnectWallet}>Disconnect Wallet</button>
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            <ConnectButton
+              client={thirdwebClient}
+              wallets={wallets}
+              connectModal={{ size: "compact" }}
+            />
+          </div>
         </span>
       </header>
 
@@ -470,13 +463,16 @@ export default function App() {
           <hr />
 
           <table style={{ width: "inherit" }}>
-            <tr>
-              <th>Outcome</th>
-              <th>% chance</th>
-              <th>action</th>
-            </tr>
-            {options && options.size > 0
-              ? [...options.entries()].map(([option, amount]) => (
+            <thead>
+              <tr>
+                <th>Outcome</th>
+                <th>% chance</th>
+                <th>action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {options && options.size > 0 ? (
+                [...options.entries()].map(([option, amount]) => (
                   <tr key={option}>
                     <td className="tdTable">
                       <div className="picDiv">
@@ -501,12 +497,19 @@ export default function App() {
                       %
                     </td>
 
-                    <td>{status && status === BET_RESULT.PENDING ? 
-                      <button onClick={() => resolve(option)}>Winner</button>: ""}
+                    <td>
+                      {status && status === BET_RESULT.PENDING ? (
+                        <button onClick={() => resolve(option)}>Winner</button>
+                      ) : (
+                        ""
+                      )}
                     </td>
                   </tr>
                 ))
-              : ""}
+              ) : (
+                <></>
+              )}
+            </tbody>
           </table>
         </div>
 
@@ -520,9 +523,7 @@ export default function App() {
             padding: "1rem",
           }}
         >
-          <span className="tdTable">
-            <BetFunction />
-          </span>
+          <span className="tdTable">{<BetFunction />}</span>
         </div>
       </div>
 
@@ -536,7 +537,7 @@ export default function App() {
           value={error}
         ></textarea>
 
-        {address ? <Ping /> : ""}
+        {account?.address ? <Ping /> : ""}
       </footer>
     </>
   );
