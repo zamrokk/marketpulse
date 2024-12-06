@@ -15,14 +15,14 @@ jobs:
         uses: actions/checkout@v3
       - name: Use node
         env:
-          DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          DEPLOYER_PRIVATE_KEY: 
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
       - run: npm ci
-      - run: echo $DEPLOYER_PRIVATE_KEY
-      - run: HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY npx hardhat compile
+      - run: echo ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+      - run: HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }} npx hardhat compile
       - run: npx hardhat test
       - name: Cache hardhat-artifacts
         uses: actions/cache@v4
