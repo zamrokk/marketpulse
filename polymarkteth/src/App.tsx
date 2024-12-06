@@ -9,22 +9,14 @@ import {
   getContract,
   prepareContractCall,
   readContract,
-  resolveMethod,
-  sendAndConfirmTransaction,
   sendTransaction,
-  simulateTransaction,
   ThirdwebClient,
   waitForReceipt,
 } from "thirdweb";
-import {
-  ConnectButton,
-  useActiveAccount,
-  useActiveWallet,
-  useDisconnect,
-} from "thirdweb/react";
+import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { createWallet, inAppWallet } from "thirdweb/wallets";
+import { parseEther } from "viem";
 import { etherlinkTestnet } from "viem/chains";
-import { BaseError, parseEther } from "viem";
 import { extractErrorDetails } from "./DecodeEvmTransactionLogsArgs";
 
 const CONTRACT_ADDRESS = "0xe2F903f3eBd77b7EC347932Ce5E53AD1961Eb002" as const;
@@ -42,7 +34,6 @@ const wallets = [
   createWallet("io.zerion.wallet"),
   createWallet("com.trustwallet.app"),
   createWallet("global.safe"),
-
 ];
 
 //crap copy pasta from Solidity code
@@ -60,8 +51,6 @@ export default function App({ thirdwebClient }: AppProps) {
   console.log("*************App");
 
   const account = useActiveAccount();
-  const wallet = useActiveWallet();
-  const { disconnect } = useDisconnect();
 
   const [options, setOptions] = useState<Map<string, bigint>>(new Map());
 
@@ -71,7 +60,7 @@ export default function App({ thirdwebClient }: AppProps) {
   const [winner, setWinner] = useState<string | undefined>(undefined);
   const [fees, setFees] = useState<number>(0);
   const [betKeys, setBetKeys] = useState<bigint[]>([]);
-  const [bets, setBets] = useState<Polymarkteth.BetStruct[]>([]);
+  const [_bets, setBets] = useState<Polymarkteth.BetStruct[]>([]);
 
   const reload = async () => {
     if (!account?.address) {

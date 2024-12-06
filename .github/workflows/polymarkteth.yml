@@ -25,11 +25,9 @@ jobs:
       - run: HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }} npx hardhat test
       - name: Cache hardhat-artifacts
         uses: actions/cache@v4
-        env:
-          cache-name: hardhat-artifacts
         with:
           path: artifacts
-          key: ${{ runner.os }}-build-${{ env.cache-name }} 
+          key: ${{ runner.os }}-build-hardhat-artifacts
   deploy-contract:
     needs: build-contract
     runs-on: ubuntu-latest
@@ -40,7 +38,7 @@ jobs:
           uses: actions/cache@v4
           with:
             path: artifacts
-            key: ${{ runner.os }}-build-${{ env.cache-name }} 
+            key: ${{ runner.os }}-build-hardhat-artifacts 
         - name: Use node 
           uses: actions/setup-node@v4
           with:
@@ -58,7 +56,7 @@ jobs:
           uses: actions/cache@v4
           with:
             path: artifacts
-            key: ${{ runner.os }}-build-${{ env.cache-name }}   
+            key: ${{ runner.os }}-build-hardhat-artifacts   
         - name: Use node 
           uses: actions/setup-node@v4
           with:
@@ -68,6 +66,41 @@ jobs:
           working-directory: ./polymarkteth
         - run: npm run typechain
           working-directory: ./polymarkteth
+        - run: npm run build  
+          working-directory: ./polymarkteth
+        - name: Cache app build
+          uses: actions/cache@v4
+          with:
+            path: ./polymarkteth/dist
+            key: ${{ runner.os }}-build-app-artifacts
+  deploy-app:
+    needs: build-app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use node 
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+      - name: Restore cache app build
+        uses: actions/cache@v4
+        with:
+          path: ./polymarkteth/dist
+          key: ${{ runner.os }}-build-app-artifacts
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: prj_vczYEgQzPgQTd3rXGDgiLKRAEn7V
+          VERCEL_ORG_ID: team_BK6SJNLRiDBIOydgfpwX8eUO
+        run: |
+          vercel deploy --prod \
+            --token=$VERCEL_TOKEN \
+            --project=$VERCEL_PROJECT_ID \
+            --scope=$VERCEL_ORG_ID
+        working-directory: ./polymarkteth
+   
   build-pages:
     runs-on: ubuntu-latest
     env:

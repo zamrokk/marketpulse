@@ -3,7 +3,6 @@ import {
   BaseError,
   ContractFunctionRevertedError,
   decodeErrorResult,
-  parseAbi,
 } from "viem";
 
 // Type-Safe Error Handling Interface
