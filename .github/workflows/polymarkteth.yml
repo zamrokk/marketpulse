@@ -59,12 +59,14 @@ jobs:
           with:
             node-version: 18
             cache: 'npm'
-        - run: cd polymarkteth
-        - run: pwd
         - run: npm ci  
+          working-directory: ./polymarkteth
         - run: npm run
+          working-directory: ./polymarkteth
         - run: more package.json 
+          working-directory: ./polymarkteth
         - run: npm run typechain
+          working-directory: ./polymarkteth
   build-pages:
     runs-on: ubuntu-latest
     env:
