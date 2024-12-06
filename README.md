@@ -100,3 +100,9 @@ copy the abi on src folder
 ```
 import abi from "./Polymarkteth.json";
 ```
+
+## compile abi
+
+```
+npm run typechain
+```

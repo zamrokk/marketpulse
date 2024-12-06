@@ -47,7 +47,7 @@ jobs:
             node-version: 18
             cache: 'npm'
         - run: npm ci
-        - run: HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }} npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --network etherlinkTestnet
+        - run: HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }} yes | npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --verify --network etherlinkTestnet
   build-app: 
     needs: deploy-contract
     runs-on: ubuntu-latest
@@ -60,6 +60,7 @@ jobs:
             node-version: 18
             cache: 'npm'
         - run: cd polymarkteth
+        - run: pwd
         - run: npm ci   
         - run: npm run typechain
         - run: npm test
