@@ -21,9 +21,8 @@ jobs:
           node-version: 18
           cache: 'npm'
       - run: npm ci
-      - run: echo ${{ secrets.DEPLOYER_PRIVATE_KEY }}
       - run: HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }} npx hardhat compile
-      - run: npx hardhat test
+      - run: HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }} npx hardhat test
       - name: Cache hardhat-artifacts
         uses: actions/cache@v4
         env:
@@ -48,7 +47,7 @@ jobs:
             node-version: 18
             cache: 'npm'
         - run: npm ci
-        - run: npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --network etherlinkTestnet
+        - run: HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }} npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --network etherlinkTestnet
   build-app: 
     needs: deploy-contract
     runs-on: ubuntu-latest
