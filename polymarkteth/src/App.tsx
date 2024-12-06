@@ -446,6 +446,7 @@ export default function App({ thirdwebClient }: AppProps) {
               client={thirdwebClient}
               wallets={wallets}
               connectModal={{ size: "compact" }}
+              chain={defineChain(etherlinkTestnet.id)}
             />
           </div>
         </span>
