@@ -61,9 +61,10 @@ jobs:
             cache: 'npm'
         - run: cd polymarkteth
         - run: pwd
-        - run: npm ci   
+        - run: npm ci  
+        - run: npm run
+        - run: more package.json 
         - run: npm run typechain
-        - run: npm test
   build-pages:
     runs-on: ubuntu-latest
     env:
