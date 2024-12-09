@@ -45,7 +45,7 @@ jobs:
             node-version: 18
             cache: 'npm'
         - run: npm ci
-        - run: yes | HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }}  npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --verify --network etherlinkTestnet
+        - run: yes | HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }}  npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --verify --reset --network etherlinkTestnet
         - name: Cache ignition
           uses: actions/cache@v4
           with:
