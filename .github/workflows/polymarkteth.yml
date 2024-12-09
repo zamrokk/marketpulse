@@ -106,11 +106,11 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: prj_vczYEgQzPgQTd3rXGDgiLKRAEn7V
           VERCEL_ORG_ID: team_BK6SJNLRiDBIOydgfpwX8eUO
-        run: vercel link --yes --token=$VERCEL_TOKEN --cwd ./polymarkteth/dist        
+        run: vercel link --yes --token=$VERCEL_TOKEN --cwd ./polymarkteth       
       - name: Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: vercel build --prod --yes --token=$VERCEL_TOKEN --cwd=./polymarkteth/dist && vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN --cwd=./polymarkteth/dist
+        run: vercel build --prod --yes --token=$VERCEL_TOKEN --cwd=./polymarkteth && vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN --cwd=./polymarkteth
   build-pages:
     runs-on: ubuntu-latest
     env:
