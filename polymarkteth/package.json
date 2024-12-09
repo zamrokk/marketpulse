@@ -9,7 +9,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "typechain": "typechain --target=ethers-v6 --out-dir=./src/typechain-types --show-stack-traces ../artifacts/contracts/Polymarkteth.sol/Polymarkteth.json"
+    "typechain": "typechain --target=ethers-v6 --out-dir=./src/typechain-types --show-stack-traces ../artifacts/contracts/Polymarkteth.sol/Polymarkteth.json",
+    "deploy": "vercel build --prod && vercel deploy --prebuilt --prod",
+    "deploy:preview": "vercel build && vercel deploy --prebuilt"
   },
   "dependencies": {
     "@typechain/ethers-v6": "^0.5.1",
