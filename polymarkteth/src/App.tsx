@@ -18,7 +18,7 @@ import { createWallet, inAppWallet } from "thirdweb/wallets";
 import { parseEther } from "viem";
 import { etherlinkTestnet } from "viem/chains";
 import { extractErrorDetails } from "./DecodeEvmTransactionLogsArgs";
-import CONTRACT_ADDRESS_JSON from "../../ignition/deployments/chain-128123/deployed_addresses.json";
+import CONTRACT_ADDRESS_JSON from "./deployed_addresses.json";
 
 const wallets = [
   inAppWallet({

@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "postinstall": "cp ../ignition/deployments/chain-128123/deployed_addresses.json ./src",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
