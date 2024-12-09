@@ -74,6 +74,7 @@ jobs:
             cache: 'npm'
         - run: npm ci  
           working-directory: ./polymarkteth
+        - run: more ./ignition/deployments/chain-128123/deployed_addresses.json
         - run: npm run typechain
           working-directory: ./polymarkteth
         - run: npm run build  
