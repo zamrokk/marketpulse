@@ -43,7 +43,7 @@ npx hardhat test
 
 ```
 npx hardhat node
-npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --network localhost
+npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --reset --network localhost
 ```
 
 # Deploy on Etherlink 0xe2F903f3eBd77b7EC347932Ce5E53AD1961Eb002
