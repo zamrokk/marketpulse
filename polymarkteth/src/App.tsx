@@ -18,8 +18,7 @@ import { createWallet, inAppWallet } from "thirdweb/wallets";
 import { parseEther } from "viem";
 import { etherlinkTestnet } from "viem/chains";
 import { extractErrorDetails } from "./DecodeEvmTransactionLogsArgs";
-
-const CONTRACT_ADDRESS = "0xe2F903f3eBd77b7EC347932Ce5E53AD1961Eb002" as const;
+import CONTRACT_ADDRESS_JSON from "../../ignition/deployments/chain-128123/deployed_addresses.json";
 
 const wallets = [
   inAppWallet({
@@ -29,14 +28,12 @@ const wallets = [
   }),
   createWallet("io.metamask"),
   createWallet("com.coinbase.wallet"),
-  createWallet("me.rainbow"),
   createWallet("io.rabby"),
-  createWallet("io.zerion.wallet"),
   createWallet("com.trustwallet.app"),
   createWallet("global.safe"),
 ];
 
-//crap copy pasta from Solidity code
+//copy pasta from Solidity code as Abi and Typechain does not export enum types
 enum BET_RESULT {
   WIN = 0,
   DRAW = 1,
@@ -71,7 +68,7 @@ export default function App({ thirdwebClient }: AppProps) {
           abi: Polymarkteth__factory.abi,
           client: thirdwebClient,
           chain: defineChain(etherlinkTestnet.id),
-          address: CONTRACT_ADDRESS,
+          address: CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
         }),
         method: "status",
         params: [],
@@ -82,7 +79,7 @@ export default function App({ thirdwebClient }: AppProps) {
           abi: Polymarkteth__factory.abi,
           client: thirdwebClient,
           chain: defineChain(etherlinkTestnet.id),
-          address: CONTRACT_ADDRESS,
+          address: CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
         }),
         method: "winner",
         params: [],
@@ -93,7 +90,7 @@ export default function App({ thirdwebClient }: AppProps) {
           abi: Polymarkteth__factory.abi,
           client: thirdwebClient,
           chain: defineChain(etherlinkTestnet.id),
-          address: CONTRACT_ADDRESS,
+          address: CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
         }),
         method: "FEES",
         params: [],
@@ -104,7 +101,7 @@ export default function App({ thirdwebClient }: AppProps) {
           abi: Polymarkteth__factory.abi,
           client: thirdwebClient,
           chain: defineChain(etherlinkTestnet.id),
-          address: CONTRACT_ADDRESS,
+          address: CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
         }),
         method: "getBetKeys",
         params: [],
@@ -146,7 +143,8 @@ export default function App({ thirdwebClient }: AppProps) {
                   abi: Polymarkteth__factory.abi,
                   client: thirdwebClient,
                   chain: defineChain(etherlinkTestnet.id),
-                  address: CONTRACT_ADDRESS,
+                  address:
+                    CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
                 }),
                 method: "getBets",
                 params: [betKey],
@@ -183,7 +181,7 @@ export default function App({ thirdwebClient }: AppProps) {
             abi: Polymarkteth__factory.abi,
             client: thirdwebClient,
             chain: defineChain(etherlinkTestnet.id),
-            address: CONTRACT_ADDRESS,
+            address: CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
           }),
           method: "ping",
           params: [],
@@ -233,7 +231,7 @@ export default function App({ thirdwebClient }: AppProps) {
           abi: Polymarkteth__factory.abi,
           client: thirdwebClient,
           chain: defineChain(etherlinkTestnet.id),
-          address: CONTRACT_ADDRESS,
+          address: CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
         });
 
         const preparedContractCall = await prepareContractCall({
@@ -393,7 +391,7 @@ export default function App({ thirdwebClient }: AppProps) {
           abi: Polymarkteth__factory.abi,
           client: thirdwebClient,
           chain: defineChain(etherlinkTestnet.id),
-          address: CONTRACT_ADDRESS,
+          address: CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
         }),
         method: "resolveResult",
         params: [option, BET_RESULT.WIN],

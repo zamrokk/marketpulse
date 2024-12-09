@@ -2,7 +2,7 @@
 
 [Introduction](README.md)
 
-- [Setup Jstz](./setup.md)
+- [Setup local dev tools](./setup.md)
 - [Backend development](./backend.md)
 - [Use chunk script to deploy large code](./chunker.md)
 - [Testing](./test.md)

@@ -46,6 +46,11 @@ jobs:
             cache: 'npm'
         - run: npm ci
         - run: yes | HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }}  npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --verify --network etherlinkTestnet
+        - name: Cache ignition
+          uses: actions/cache@v4
+          with:
+            path: ignition
+            key: ${{ runner.os }}-deploy-contract-ignition
   build-app: 
     needs: deploy-contract
     runs-on: ubuntu-latest
@@ -56,7 +61,12 @@ jobs:
           uses: actions/cache@v4
           with:
             path: artifacts
-            key: ${{ runner.os }}-build-hardhat-artifacts   
+            key: ${{ runner.os }}-build-hardhat-artifacts
+        - name: Restore ignition
+          uses: actions/cache@v4
+          with:
+            path: ignition
+            key: ${{ runner.os }}-deploy-contract-ignition   
         - name: Use node 
           uses: actions/setup-node@v4
           with:

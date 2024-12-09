@@ -3,11 +3,11 @@ authors = ["Benjamin Fuentes"]
 language = "en"
 multilingual = false
 src = "src"
-title = "Polymarktez - A guide to develop on Jstz"
+title = "Polymarkteth - A guide to develop on Etherlink"
 
 [output.html]
 mathjax-support = true
-git-repository-url = "https://github.com/zamrokk/polymarktez"
+git-repository-url = "https://github.com/zamrokk/polymarkteth"
 
 [output.html.playground]
 editable = true
