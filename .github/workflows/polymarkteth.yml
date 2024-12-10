@@ -39,6 +39,7 @@ jobs:
           uses: actions/download-artifact@v3
           with:
             name: ${{ runner.os }}-build-hardhat-artifacts
+            path: artifacts
         - name: Use node 
           uses: actions/setup-node@v4
           with:
@@ -62,10 +63,12 @@ jobs:
           uses: actions/download-artifact@v3
           with:
             name: ${{ runner.os }}-build-hardhat-artifacts
+            path: artifacts
         - name: Restore hardhat-ignition
           uses: actions/download-artifact@v3
           with:
-            name: ${{ runner.os }}-deploy-hardhat-ignition   
+            name: ${{ runner.os }}-deploy-hardhat-ignition
+            path: ignition   
         - name: Use node 
           uses: actions/setup-node@v4
           with:
@@ -97,10 +100,6 @@ jobs:
           cache: 'npm'
       - name: Install Vercel CLI
         run: npm install -g vercel
-      - name: Restore hardhat-ignition
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ runner.os }}-build-app-artifacts
       - name: Link to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
