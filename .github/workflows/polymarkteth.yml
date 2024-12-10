@@ -24,7 +24,7 @@ jobs:
       - run: HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }} npx hardhat compile
       - run: HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }} npx hardhat test
       - name: Cache build-hardhat-artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-build-hardhat-artifacts
           path: artifacts
@@ -36,7 +36,7 @@ jobs:
         - name: Check out repository code
           uses: actions/checkout@v3
         - name: Restore build-hardhat-artifacts
-          uses: actions/download-artifact@v3
+          uses: actions/download-artifact@v4
           with:
             name: ${{ runner.os }}-build-hardhat-artifacts
             path: artifacts
@@ -48,7 +48,7 @@ jobs:
         - run: npm ci
         - run: yes | HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }}  npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --verify --reset --network etherlinkTestnet
         - name: Cache hardhat-ignition
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: ${{ runner.os }}-deploy-hardhat-ignition
             path: ignition
@@ -60,12 +60,12 @@ jobs:
         - name: Check out repository code
           uses: actions/checkout@v3
         - name: Restore hardhat-artifacts
-          uses: actions/download-artifact@v3
+          uses: actions/download-artifact@v4
           with:
             name: ${{ runner.os }}-build-hardhat-artifacts
             path: artifacts
         - name: Restore hardhat-ignition
-          uses: actions/download-artifact@v3
+          uses: actions/download-artifact@v4
           with:
             name: ${{ runner.os }}-deploy-hardhat-ignition
             path: ignition   
@@ -80,7 +80,7 @@ jobs:
         - run: npm run build  
           working-directory: ./polymarkteth
         - name: Cache app build
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: ${{ runner.os }}-build-app-artifacts
             path: ./polymarkteth/dist
@@ -105,12 +105,12 @@ jobs:
           VERCEL_ORG_ID: team_BK6SJNLRiDBIOydgfpwX8eUO
         run: vercel link --yes --token=$VERCEL_TOKEN --cwd ./polymarkteth
       - name: Restore hardhat-artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ runner.os }}-build-hardhat-artifacts
           path: artifacts
       - name: Restore hardhat-ignition
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ runner.os }}-deploy-hardhat-ignition
           path: ignition        
@@ -135,7 +135,7 @@ jobs:
     - name: Build with mdBook
       run: mdbook build docs/
     - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
+      uses: actions/upload-pages-artifact@v4
       with:
         path: ./docs/book
       
