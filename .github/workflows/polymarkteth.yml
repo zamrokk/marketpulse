@@ -24,10 +24,11 @@ jobs:
       - run: HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }} npx hardhat compile
       - run: HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }} npx hardhat test
       - name: Cache hardhat-artifacts
-        uses: actions/cache@v4
+        uses: actions/upload-artifact@v4
         with:
+          name: ${{ runner.os }}-build-hardhat-artifacts
           path: artifacts
-          key: ${{ runner.os }}-build-hardhat-artifacts
+          retention-days: 1
   deploy-contract:
     needs: build-contract
     runs-on: ubuntu-latest
@@ -35,10 +36,9 @@ jobs:
         - name: Check out repository code
           uses: actions/checkout@v3
         - name: Restore hardhat-artifacts
-          uses: actions/cache@v4
+          uses: actions/download-artifact@v4
           with:
-            path: artifacts
-            key: ${{ runner.os }}-build-hardhat-artifacts 
+            name: ${{ runner.os }}-build-hardhat-artifacts
         - name: Use node 
           uses: actions/setup-node@v4
           with:
@@ -46,12 +46,12 @@ jobs:
             cache: 'npm'
         - run: npm ci
         - run: yes | HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }}  npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --verify --reset --network etherlinkTestnet
-        - run: more ./ignition/deployments/chain-128123/deployed_addresses.json
-        - name: Cache ignition
-          uses: actions/cache@v4
+        - name: Cache hardhat-ignition
+          uses: actions/upload-artifact@v4
           with:
+            name: ${{ runner.os }}-deploy-hardhat-ignition
             path: ignition
-            key: ${{ runner.os }}-deploy-contract-ignition
+            retention-days: 1
   build-app: 
     needs: deploy-contract
     runs-on: ubuntu-latest
@@ -59,15 +59,13 @@ jobs:
         - name: Check out repository code
           uses: actions/checkout@v3
         - name: Restore hardhat-artifacts
-          uses: actions/cache@v4
+          uses: actions/download-artifact@v4
           with:
-            path: artifacts
-            key: ${{ runner.os }}-build-hardhat-artifacts
-        - name: Restore ignition
-          uses: actions/cache@v4
+            name: ${{ runner.os }}-build-hardhat-artifacts
+        - name: Restore hardhat-ignition
+          uses: actions/download-artifact@v4
           with:
-            path: ignition
-            key: ${{ runner.os }}-deploy-contract-ignition   
+            name: ${{ runner.os }}-deploy-hardhat-ignition   
         - name: Use node 
           uses: actions/setup-node@v4
           with:
@@ -81,10 +79,11 @@ jobs:
         - run: npm run build  
           working-directory: ./polymarkteth
         - name: Cache app build
-          uses: actions/cache@v4
+          uses: actions/upload-artifact@v4
           with:
+            name: ${{ runner.os }}-build-app-artifacts
             path: ./polymarkteth/dist
-            key: ${{ runner.os }}-build-app-artifacts
+            retention-days: 1
   deploy-app:
     needs: build-app
     runs-on: ubuntu-latest
@@ -98,11 +97,10 @@ jobs:
           cache: 'npm'
       - name: Install Vercel CLI
         run: npm install -g vercel
-      - name: Restore cache app build
-        uses: actions/cache@v4
+      - name: Restore hardhat-ignition
+        uses: actions/download-artifact@v4
         with:
-          path: ./polymarkteth/dist
-          key: ${{ runner.os }}-build-app-artifacts
+          name: ${{ runner.os }}-build-app-artifacts
       - name: Link to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
