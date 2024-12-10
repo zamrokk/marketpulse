@@ -114,10 +114,14 @@ jobs:
         with:
           name: ${{ runner.os }}-deploy-hardhat-ignition
           path: ignition        
+      - name: Prepare build for Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod --yes --token=$VERCEL_TOKEN --cwd=./polymarkteth 
       - name: Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: vercel build --prod --yes --token=$VERCEL_TOKEN --cwd=./polymarkteth && vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN --cwd=./polymarkteth
+        run: vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN --cwd=./polymarkteth
   build-pages:
     runs-on: ubuntu-latest
     env:
