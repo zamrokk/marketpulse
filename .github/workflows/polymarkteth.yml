@@ -77,8 +77,6 @@ jobs:
         - run: npm ci  
           working-directory: ./polymarkteth
         - run: more ./ignition/deployments/chain-128123/deployed_addresses.json
-        - run: npm run typechain
-          working-directory: ./polymarkteth
         - run: npm run build  
           working-directory: ./polymarkteth
         - name: Cache app build
@@ -105,7 +103,17 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: prj_vczYEgQzPgQTd3rXGDgiLKRAEn7V
           VERCEL_ORG_ID: team_BK6SJNLRiDBIOydgfpwX8eUO
-        run: vercel link --yes --token=$VERCEL_TOKEN --cwd ./polymarkteth       
+        run: vercel link --yes --token=$VERCEL_TOKEN --cwd ./polymarkteth
+      - name: Restore hardhat-artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ runner.os }}-build-hardhat-artifacts
+          path: artifacts
+      - name: Restore hardhat-ignition
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ runner.os }}-deploy-hardhat-ignition
+          path: ignition        
       - name: Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

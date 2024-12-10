@@ -4,12 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "postinstall": "cp ../ignition/deployments/chain-128123/deployed_addresses.json ./src",
+    "postinstall": "cp ../ignition/deployments/chain-128123/deployed_addresses.json ./src  &&  typechain --target=ethers-v6 --out-dir=./src/typechain-types --show-stack-traces ../artifacts/contracts/Polymarkteth.sol/Polymarkteth.json",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "typechain": "typechain --target=ethers-v6 --out-dir=./src/typechain-types --show-stack-traces ../artifacts/contracts/Polymarkteth.sol/Polymarkteth.json",
     "deploy": "vercel build --prod && vercel deploy --prebuilt --prod",
     "deploy:preview": "vercel build && vercel deploy --prebuilt"
   },
