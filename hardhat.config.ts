@@ -1,15 +1,13 @@
-import type { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-verify";
-import {vars} from "hardhat/config";
+import type { HardhatUserConfig } from "hardhat/config";
+import { vars } from "hardhat/config";
 
-
-if(!vars.has("DEPLOYER_PRIVATE_KEY") ){
+if (!vars.has("DEPLOYER_PRIVATE_KEY")) {
   console.error("Missing env var DEPLOYER_PRIVATE_KEY");
 }
 
-const deployerPrivateKey =
-vars.get("DEPLOYER_PRIVATE_KEY") 
+const deployerPrivateKey = vars.get("DEPLOYER_PRIVATE_KEY");
 
 const config: HardhatUserConfig = {
   solidity: "0.8.24",
@@ -22,12 +20,6 @@ const config: HardhatUserConfig = {
     etherlinkTestnet: {
       url: "https://node.ghostnet.etherlink.com",
       accounts: [deployerPrivateKey],
-      /*ignition: {
-        maxFeePerGasLimit: 50_000_000_000n, // 50 gwei
-        maxPriorityFeePerGas: 5_000_000_000n, // 5 gwei
-        gasPrice: 50_000_000_000n, // 50 gwei
-        disableFeeBumping: false,
-      },*/
     },
   },
   etherscan: {
@@ -57,8 +49,8 @@ const config: HardhatUserConfig = {
   sourcify: {
     // Disabled by default
     // Doesn't need an API key
-    enabled: false
-  }
+    enabled: false,
+  },
 };
 
 export default config;

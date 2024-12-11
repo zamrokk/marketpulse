@@ -82,27 +82,12 @@ npm i @metamask/providers
 ```
 
 
-## viem file for etherlink
+# Docs
+
+build and serve
 
 ```
-mkdir ./src/config
-touch ./src/config/viem.ts
-
-mkdir ./src/utils
-touch ./src/utils/errors.ts
+mdbook serve
 ```
 
-
-## ABI
-
-copy the abi on src folder
-
-```
-import abi from "./Polymarkteth.json";
-```
-
-## compile abi
-
-```
-npm run typechain
-```
+=> http://localhost:3000/

@@ -1,263 +1,298 @@
 # Backend development
 
-1. Create a blank Typescript project
+1. Remove the default Solidity smart contract **Lock.sol** on the **./contracts** folder
 
-   Fill information while running (your default main entrypoint has to be `index.ts` and not `index.js`)
-
-   ```bash
-   npm init
-   ```
-
-1. Install Typescript and tsx as dev dependency, esbuild for building, jest and node for running tests locally
+1. Create a new file **Polymarkteth.sol** on the **./contracts** folder
 
    ```bash
-   npm i -D typescript tsx  @types/jest @types/node esbuild jest ts-jest
+   touch ./contracts/Polymarkteth.sol
    ```
 
-1. Create a tsconfig file
+1. Edit the file with this code
 
-   ```bash
-   touch tsconfig.json
-   ```
+   ```Solidity
+   // SPDX-License-Identifier: MIT
+   pragma solidity ^0.8.24;
 
-   And paste this inside to add typings for jstz (and jest for testing later)
+   // Uncomment this line to use console.log
+   import "hardhat/console.sol";
 
-   ```json
-   {
-     "compilerOptions": {
-       "lib": ["esnext"],
-       "module": "esnext",
-       "target": "esnext",
-       "strict": true,
-       "moduleResolution": "node",
-       "types": ["@jstz-dev/types", "jest"],
-       "resolveJsonModule": true,
-       "esModuleInterop": true
-     },
-     "exclude": ["node_modules"]
-   }
-   ```
+   import "@openzeppelin/contracts/utils/math/Math.sol";
 
-1. Update the script section on `package.json` to build your app
+   /**
+    * @title Polymarkteth
+   * @author Benjamin Fuentes
+   * @notice odds are
+   */
+   contract Polymarkteth {
+       using Math for uint256;
 
-   ```json
-   "scripts": {
-     "build": "esbuild index.ts --bundle --format=esm --target=esnext --minify --outfile=dist/index.js"
-   }
-   ```
+       struct Bet {
+           uint256 id;
+           address payable owner;
+           string option;
+           uint256 amount; //wei
+       }
 
-1. Create a default index.ts file and a file for type declarations
+       enum BET_RESULT {
+           WIN,
+           DRAW,
+           PENDING
+       }
 
-   ```bash
-   touch index.ts
-   touch index.types.ts
-   ```
+       uint256 public constant ODD_DECIMALS = 10;
+       uint256 public constant FEES = 10; // as PERCENTAGE unit (%)
 
-   and edit `index.ts` with
+       /** SLOTS */
+       address payable public admin; //0
+       mapping(uint256 => Bet) public bets; //1
+       uint256[] public betKeys; //2
+       BET_RESULT public status = BET_RESULT.PENDING; //3
+       string public winner; //4
 
-   ```typescript
-   import { KEYS, Bet, BET_RESULT } from "./index.types";
-   const handler = async (request: Request): Promise<Response> => {
-     return new Response();
-   };
+       event Pong();
 
-   export default handler;
-   ```
+       constructor() payable {
+           admin = payable(msg.sender);
+       }
 
-   and `index.types.ts` with
-
-   ```typescript
-    //******************* types
-    export type Bet = {
-        id: string;
-        owner: Address;
-        option: string;
-        amount: number;
-    };
-
-    export enum BET_RESULT {
-        'WIN' = 'WIN',
-        'DRAW' = 'DRAW',
-        'PENDING' = 'PENDING'
-    }
-
-    //******************* state keys
-    export enum KEYS {
-        "FEES" = "FEES",
-        "BETMAP" = "BETMAP",
-        "RESULT" = "RESULT",
-        "ADMIN" = "ADMIN",
-        "BOOT_MODE" = "BOOT_MODE",
-        "CODE" = "CODE"
-    };
-   ```
-
-1. Compile
-
-   ```bash
-   npm run build
-   ```
-
-1. Code the handler
-
-   1. Import this library to easily match url path
-
-      ```bash
-      npm i ts-pattern
-      ```
-
-   1. Define a part of the code for a betting platform. Edit `index.ts`
-
-      ```typescript
-      import { KEYS, Bet, BET_RESULT } from "./index.types";
-      import { match } from "ts-pattern";
-
-      //******************* functions
-
-      //FIXME : we consider that the user sent a deposit `amount` separately to this call as it is not possible right now to add money inside a request
-      const placeBet = (
-        user: Address,
-        selection: string,
-        amount: number,
-        odds: number
-      ): Response => {
-        //FIXME : `amount` will have to be natively supported by request later
-
-        if (amount <= 0) {
-          const errorMessage = "Bet amount must be positive.";
-          console.error(errorMessage);
-          return new Response(errorMessage, { status: 500 });
-        }
-
-        if (amount > Ledger.balance(user)) {
-          const errorMessage = "Insufficient balance to place this bet.";
-          console.error(errorMessage);
-          return new Response(errorMessage, { status: 500 });
-        }
-
-        const betId = generateBetId();
-        const bet: Bet = { id: betId, option: selection, amount, owner: user };
-        const bets = new Map<string, Bet>(Object.entries(Kv.get(KEYS.BETMAP)!));
-        bets.set(betId, bet);
-
-        console.log(`Bet placed: ${amount} on ${selection} at odds of ${odds}`);
-
-        //save to storage
-        Kv.set(KEYS.BETMAP, Object.fromEntries(bets.entries()));
-
-        console.log("BETMAP", Kv.get(KEYS.BETMAP)!);
-        return new Response(JSON.stringify({ id: betId }));
-      };
-
-      const generateBetId = (): string => {
-        console.log("Calling generateBetId");
-        return Math.random().toString(36).slice(2, 9);
-      };
-
-      /**
-       *
-       * @param option
-       * @param betAmount (Optional) if user want to know the output gain after putting some money on it. Otherwise it gives actual gain without betting and influencing odds calculation
-       * @returns
+       /**
+        * Getter /setter
        */
-      const calculateOdds = (option: string, betAmount?: number): number => {
-        const bets = new Map<string, Bet>(
-          Object.entries(Kv.get<Map<string, Bet>>(KEYS.BETMAP)!)
-        );
-        const fees = Kv.get<number>(KEYS.FEES)!;
+       function getBetKeys() public view returns (uint256[] memory) {
+           return betKeys;
+       }
 
-        const totalLoserAmount =
-          [...bets.values()]
-            .filter((bet) => bet.option !== option)
-            .map((bet) => bet.amount)
-            .reduce((acc, currentAmount) => acc + currentAmount, 0) || 0;
-        console.log("totalLoserAmount", totalLoserAmount);
-        const totalWinnerAmount =
-          [...bets.values()]
-            .filter((bet) => bet.option == option)
-            .map((bet) => bet.amount)
-            .reduce(
-              (acc, currentAmount) => acc + currentAmount,
-              betAmount ? betAmount : 0
-            ) || 0;
-        console.log("totalWinnerAmount", totalWinnerAmount);
-        return 1 + totalLoserAmount / totalWinnerAmount - fees;
-      };
+       function getBets(uint256 betId) public view returns (Bet memory bet) {
+           return bets[betId];
+       }
 
-      //******************* handler
+       /** Utility
+        *
+       * */
 
-      const handler = async (request: Request): Promise<Response> => {
-        // Extract the requester's address and message from the request
-        const user = request.headers.get("Referer") as Address;
-        const url = new URL(request.url);
-        const path = url.pathname;
+       function addressToString(
+           address _addr
+       ) public pure returns (string memory) {
+           bytes memory alphabet = "0123456789abcdef";
+           bytes20 value = bytes20(_addr);
+           bytes memory str = new bytes(42);
 
-        console.debug("path", path);
+           str[0] = "0";
+           str[1] = "x";
 
-        let params = url.searchParams;
+           for (uint i = 0; i < 20; i++) {
+               str[2 + i * 2] = alphabet[uint(uint8(value[i] >> 4))];
+               str[3 + i * 2] = alphabet[uint(uint8(value[i] & 0x0f))];
+           }
 
-        console.debug("params", params);
+           return string(str);
+       }
 
-        // remove first / to simplify matching after the split
-        let pathCutArr = path.replace("/", "").split("/");
+       /**
+        * Simple Ping
+       */
+       function ping() public{
+           console.log("Ping");
+           emit Pong();
+       }
 
-        try {
-          return match(pathCutArr)
-            .with(["bet"], async () => {
-              console.debug("bet called");
+       function generateBetId() private view returns (uint256) {
+           console.log("Calling generateBetId");
+           return
+               uint256(
+                   keccak256(
+                       abi.encodePacked(
+                           block.timestamp,
+                           block.prevrandao,
+                           msg.sender
+                       )
+                   )
+               );
+       }
 
-              if (request.method === "POST") {
-                const bet = await request.json();
-                console.log("user", user, "bet", bet);
-                return placeBet(
-                  user,
-                  bet.option,
-                  bet.amount,
-                  calculateOdds(bet.option, bet.amount)
-                );
-              } else if (request.method === "GET") {
-                console.debug("bet GET called");
+       /**
+        * place bets and returns the betId
+       */
+       function bet(
+           string calldata selection,
+           uint256 odds
+       ) public payable returns (uint256) {
+           require(msg.value > 0, "Bet amount must be positive.");
+           require(
+               msg.value <= msg.sender.balance,
+               "Insufficient balance to place this bet."
+           );
 
-                console.log("BETMAP", Kv.get(KEYS.BETMAP)!);
+           uint256 betId = generateBetId();
 
-                const betmap = new Map<string, Bet>(
-                  Object.entries(Kv.get(KEYS.BETMAP)!)
-                );
-                console.debug("betmap", betmap);
+           bets[betId] = Bet({
+               id: betId,
+               option: selection,
+               amount: msg.value,
+               owner: payable(msg.sender)
+           });
+           betKeys.push(betId);
 
-                const bets = [...betmap!.values()];
+           console.log("Bet %d placed", betId);
 
-                console.debug("bets", bets);
+           console.log(
+               "Bet placed: %d on %s at odds of %d",
+               msg.value,
+               selection,
+               odds
+           );
+           return betId;
+       }
 
-                return new Response(JSON.stringify(bets));
-              } else {
-                const error = "/bet is a GET or POST request";
-                console.error(error);
-                return new Response(error, { status: 500 });
-              }
-            })
-            .otherwise(() => {
-              const error = `Unrecognised parsed entrypoint ${pathCutArr.toString()}`;
-              console.error(error, pathCutArr);
-              return new Response(error, { status: 404 });
-            });
-        } catch (error) {
-          console.error(error);
-          throw error;
-        }
-      };
+       /**
+        *
+       * @param option selected option
+       * @param betAmount (Optional : default is 0) if user want to know the output gain after putting some money on it. Otherwise it gives actual gain without betting and influencing odds calculation
+       * @return odds (in ODDS_DECIMAL unit)
+       */
+       function calculateOdds(
+           string memory option,
+           uint256 betAmount //wei
+       ) public view returns (uint256) {
+           console.log(
+               "calculateOdds for option %s and bet amount is %d",
+               option,
+               betAmount
+           );
 
-      export default handler;
-      ```
+           uint256 totalLoserAmount = 0; //wei
+           for (uint i = 0; i < betKeys.length; i++) {
+               Bet memory bet = bets[betKeys[i]];
 
-   1. Remarks :
-      - Not all Node specific functions are supported. Avoid : Array.from, ... 
-      - You should avoid deprecated functions as much as possible. Ex : String.subtr, ... 
-      - FIXME : you cannot extract the amount on a received transaction, because it is not yet available to to so. So for yours tests or frontend app, you will have to send manually money with jstz CLI. It is not MVP-ready yet
-      - be careful with the usage of the KV map when you store object as a value. For example, when you want to store a map into the KV storage, as the KV store is also a map itself, you have to extract all elements to be well serialized into the map. Otherwise during deserialization, the value will be an empty object
+               if (keccak256(bytes(bet.option)) != keccak256(bytes(option))) {
+                   (bool success, uint256 result) = totalLoserAmount.tryAdd(
+                       bet.amount
+                   );
+                   require(success, "Cannot add totalLoserAmount and bet.amount");
+                   totalLoserAmount = result;
+               }
+           }
+           console.log("totalLoserAmount : %d", totalLoserAmount);
+
+           uint256 totalWinnerAmount = betAmount; //wei
+           for (uint i = 0; i < betKeys.length; i++) {
+               Bet memory bet = bets[betKeys[i]];
+
+               if (keccak256(bytes(bet.option)) == keccak256(bytes(option))) {
+                   (bool success, uint256 result) = totalWinnerAmount.tryAdd(
+                       bet.amount
+                   );
+                   require(success, "Cannot add totalWinnerAmount and bet.amount");
+                   totalWinnerAmount = result;
+               }
+           }
+           console.log("totalWinnerAmount  : %d", totalWinnerAmount);
+           uint256 part = Math.mulDiv(
+               totalLoserAmount,
+               10 ** ODD_DECIMALS,
+               totalWinnerAmount
+           );
+
+           console.log("part per ODD_DECIMAL : %d", part);
+
+           (bool success1, uint256 oddwithoutFees) = part.tryAdd(
+               10 ** ODD_DECIMALS
+           );
+           require(success1, "Cannot add part and 1");
+
+           console.log("oddwithoutFees  : %d", oddwithoutFees);
+
+           (bool success2, uint256 odd) = oddwithoutFees.trySub(
+               (FEES * 10 ** ODD_DECIMALS) / 100
+           );
+           require(success2, "Cannot remove fees from odd");
+
+           console.log("odd  : %d", odd);
+
+           return odd;
+       }
+
+       function resolveResult(
+           string memory optionResult,
+           BET_RESULT result
+       ) public {
+           require(
+               msg.sender == admin,
+               string.concat(
+                   "Only the admin ",
+                   addressToString(admin),
+                   " can give the result."
+               )
+           );
+
+           require(
+               status == BET_RESULT.PENDING,
+               string(
+                   abi.encodePacked(
+                       "Result is already given and bets are resolved : ",
+                       status
+                   )
+               )
+           );
+
+           require(
+               result == BET_RESULT.WIN || result == BET_RESULT.DRAW,
+               "Only give winners or draw, no other choices"
+           );
+
+           for (uint i = 0; i < betKeys.length; i++) {
+               Bet memory bet = bets[betKeys[i]];
+               if (
+                   result == BET_RESULT.WIN &&
+                   keccak256(bytes(bet.option)) == keccak256(bytes(optionResult))
+               ) {
+                   //WINNER!
+                   uint256 earnings = Math.mulDiv(
+                       bet.amount,
+                       calculateOdds(bet.option, 0),
+                       10 ** ODD_DECIMALS
+                   );
+                   console.log("earnings : %d for %s", earnings, bet.owner);
+                   bet.owner.transfer(earnings);
+                   winner = optionResult;
+               } else if (result == BET_RESULT.DRAW) {
+                   //GIVE BACK MONEY - FEES
+
+                   uint256 feesAmount = Math.mulDiv(bet.amount, FEES, 100);
+
+                   (bool success, uint256 moneyBack) = bet.amount.trySub(
+                       feesAmount
+                   );
+
+                   require(success, "Cannot sub fees amount from amount");
+
+                   console.log(
+                       "give back money : %d for %s",
+                       moneyBack,
+                       bet.owner
+                   );
+
+                   bet.owner.transfer(moneyBack);
+               } else {
+                   //NEXT
+                   console.log("bet lost for %s", bet.owner);
+               }
+           }
+
+           status = result;
+       }
+   }
+   ```
+
+   - The contract is a bet application where any user can place bets over a predefined poll
+   - Bet structure is composed by an id, an owner address, an option representing the choice and the bet amount (in wei units). Note : The id is randomly generated in order to showcase how to use and indexer to list all the keys of the bet **mapping** and retrieve it for calculation. An optimized implementation would consist on removing the bets mapping and just keep some aggregated variables for the odd calculation, as it, it also remove the need of an indexer.
+   - You can place bets as many as you want
+   - Once bets are done, you can click to resolve the winner and transactions are executed by the contract. Note : On next chapter, an Oracle is introduced to do this job instead of a clickable-by-everyone button
+   - Odd calculation is using safe math to avoid unexpected and dangerous behaviors
 
 1. Compile
 
    ```bash
-   npm run build
+   npx hardhat compile
    ```

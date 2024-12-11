@@ -10,6 +10,6 @@ const client = createThirdwebClient({
 
 createRoot(document.getElementById("root")!).render(
   <ThirdwebProvider>
-    <App thirdwebClient={client}/>
+    <App thirdwebClient={client} />
   </ThirdwebProvider>
 );

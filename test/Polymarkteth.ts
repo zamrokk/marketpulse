@@ -1,23 +1,7 @@
-import {
-  time,
-  loadFixture,
-} from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
+import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import { expect } from "chai";
 import hre from "hardhat";
-import {
-  ContractFunctionExecutionError,
-  defineChain,
-  fromHex,
-  getAddress,
-  hexToBigInt,
-  hexToNumber,
-  hexToString,
-  parseEther,
-  parseGwei,
-  toHex,
-} from "viem";
-import PolymarktethModule from "../ignition/modules/Polymarkteth";
-import { hardhat } from "viem/chains";
+import { ContractFunctionExecutionError, parseEther } from "viem";
 const ODD_DECIMALS = 10;
 let initAliceAmount = 0n;
 let initBobAmount = 0n;
@@ -42,9 +26,10 @@ describe("Polymarkteth", function () {
       "0x0",
     ]);
 
-    const polymarktethContract = await hre.viem.deployContract("Polymarkteth", [
-     
-    ]);
+    const polymarktethContract = await hre.viem.deployContract(
+      "Polymarkteth",
+      []
+    );
 
     const publicClient = await hre.viem.getPublicClient();
 
@@ -247,34 +232,11 @@ describe("Polymarkteth", function () {
           ["trump", BET_RESULT.WIN],
           { gasPrice: 0n }
         );
-      } catch (e ) {
-        expect((e as ContractFunctionExecutionError).details ).equals("VM Exception while processing transaction: reverted with reason string 'Result is already given and bets are resolved : \x00'");
+      } catch (e) {
+        expect((e as ContractFunctionExecutionError).details).equals(
+          "VM Exception while processing transaction: reverted with reason string 'Result is already given and bets are resolved : \x00'"
+        );
       }
     });
   });
-
-  /*
-
-
-
-   
-
-    it('should have state finalized', async () => {
-        const res = await contract(resultRequest);
-        expect(res.status).toBe(200);
-        const body = await res.json();
-        expect(body).not.toBeNull();
-        expect(body.result).toEqual(BET_RESULT.WIN);
-    });
-
-    it('should return 500 if we try to reapply results', async () => {
-
-        const res = await contract(resultOnRequest("trump", BET_RESULT.WIN));
-        expect(res.status).toBe(500);
-
-    });
-
-
-});
-*/
 });
