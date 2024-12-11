@@ -38,9 +38,9 @@
     "postinstall": "cp ../ignition/deployments/chain-128123/deployed_addresses.json ./src  &&  typechain --target=ethers-v6 --out-dir=./src/typechain-types --show-stack-traces ../artifacts/contracts/Polymarkteth.sol/Polymarkteth.json",
    ```
 
-1. Run **npm i** to call the postinstall script automatically
+1. Run **npm i** to call the postinstall script automatically. You should see new files on your **./app/src** folder
 
-1. Create an utility file to manage Viem errors. Better to have nicer error display than technical and not helpful ones 
+1. Create an utility file to manage Viem errors. Better to have nicer error display than technical and not helpful ones
 
    ```bash
    touch ./app/src/DecodeEvmTransactionLogsArgs.ts
@@ -131,7 +131,7 @@
 
    ```
 
-1. Edit **./app/src/main.tsx**, an add **Thirdweb** provider around your application. You need to replace **<THIRDWEB_CLIENTID>** below by your own clientId from the [Thirdweb dashboard](https://portal.thirdweb.com/typescript/v4/getting-started#initialize-the-sdk)
+1. Edit **./app/src/main.tsx**, an add **Thirdweb** provider around your application. You need to replace **<THIRDWEB_CLIENTID>** below by your own clientId configured on the [Thirdweb dashboard](https://portal.thirdweb.com/typescript/v4/getting-started#initialize-the-sdk)
 
    ```Typescript
    import { createRoot } from "react-dom/client";
@@ -691,11 +691,19 @@
    }
    ```
 
+   Explanations : 
+   - **import { Polymarkteth, Polymarkteth__factory } from "./typechain-types";** : to have the contract ABI and contract structures
+   - **import CONTRACT_ADDRESS_JSON from "./deployed_addresses.json";** : to find the last deployed address automatically
+   - **const wallets = [inAppWallet(...),createWallet(...)}** : Here is the configuration for the thirdweb wallet. Look at the [Thirdweb playground](https://playground.thirdweb.com/connect/sign-in/button?tab=code) to play with the generator
+   - **useActiveAccount** : Thirdweb React hooks and functions are just wrapper over the Viem library. Here is to get the active account
+   - **const reload = async () => {** : function used to refresh the smart contract storage (status,winner,fees and mapping keys)
+   - **useEffect...[betKeys]);** : React effect to reload all bets from the storage when betKeys is updated 
+   - **const Ping = () => {** : This function is just a technical endpoint to test if your smart contract interaction works. It can be removed for production
+   - **const BetFunction = () => {** : This function sends your bet to the smart contract, passing along the correct amount of XTZ
+   - **const calculateOdds = (option: string, amount?: bigint): BigNumber => {** : Similar the the onchain function calculating odds
 
 
-
-
-1. To fix css , edit `App.css`
+1. To fix the CSS for the page styling , edit `App.css` with
 
    ```css
    #root {
@@ -784,7 +792,7 @@
    }
    ```
 
-1. Add `index.css`
+1. Edit also `index.css` with
 
    ```css
    :root {
@@ -928,4 +936,4 @@
 
    1. The page's right corner refreshed and displays the winner option of the poll
 
-   1. Find your transaction **resolveResult** on the explorer **https://testnet.explorer.etherlink.com**. In the **Transaction details>Internal txns**, you should see, if you are a winner, the expected amount transferred to you by the smart contract 
+   1. Find your transaction **resolveResult** on the explorer **https://testnet.explorer.etherlink.com**. In the **Transaction details>Internal txns**, you should see, if you are a winner, the expected amount transferred to you by the smart contract
