@@ -120,7 +120,7 @@ Here is an example of one using the **Github** config files and [Vercel](https:/
              VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
              VERCEL_PROJECT_ID: prj_vczYEgQzPgQTd3rXGDgiLKRAEn7V
              VERCEL_ORG_ID: team_BK6SJNLRiDBIOydgfpwX8eUO
-           run: vercel link --yes --token=$VERCEL_TOKEN --cwd ./polymarkteth
+           run: vercel link --yes --token=$VERCEL_TOKEN --cwd ./app --project polymarkteth
          - name: Restore hardhat-artifacts
            uses: actions/download-artifact@v4
            with:
