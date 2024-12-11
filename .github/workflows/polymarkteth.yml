@@ -75,15 +75,15 @@ jobs:
             node-version: 18
             cache: 'npm'
         - run: npm ci  
-          working-directory: ./polymarkteth
+          working-directory: ./app
         - run: more ./ignition/deployments/chain-128123/deployed_addresses.json
         - run: npm run build  
-          working-directory: ./polymarkteth
+          working-directory: ./app
         - name: Cache app build
           uses: actions/upload-artifact@v4
           with:
             name: ${{ runner.os }}-build-app-artifacts
-            path: ./polymarkteth/dist
+            path: ./app/dist
             retention-days: 1
   deploy-app:
     needs: build-app
@@ -103,7 +103,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: prj_vczYEgQzPgQTd3rXGDgiLKRAEn7V
           VERCEL_ORG_ID: team_BK6SJNLRiDBIOydgfpwX8eUO
-        run: vercel link --yes --token=$VERCEL_TOKEN --cwd ./polymarkteth
+        run: vercel link --yes --token=$VERCEL_TOKEN --cwd ./app
       - name: Restore hardhat-artifacts
         uses: actions/download-artifact@v4
         with:
@@ -117,11 +117,11 @@ jobs:
       - name: Prepare build for Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: vercel build --prod --yes --token=$VERCEL_TOKEN --cwd=./polymarkteth 
+        run: vercel build --prod --yes --token=$VERCEL_TOKEN --cwd=./app 
       - name: Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN --cwd=./polymarkteth
+        run: vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN --cwd=./app
   build-pages:
     runs-on: ubuntu-latest
     env:
