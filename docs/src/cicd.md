@@ -118,7 +118,6 @@ Here is an example of one using the **Github** config files and [Vercel](https:/
          - name: Link to Vercel
            env:
              VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-             VERCEL_PROJECT_ID: prj_vczYEgQzPgQTd3rXGDgiLKRAEn7V
              VERCEL_ORG_ID: team_BK6SJNLRiDBIOydgfpwX8eUO
            run: vercel link --yes --token=$VERCEL_TOKEN --cwd ./app --project polymarkteth
          - name: Restore hardhat-artifacts
@@ -153,7 +152,6 @@ Here is an example of one using the **Github** config files and [Vercel](https:/
    - DEPLOYER_PRIVATE_KEY : It is the Etherlink account secret private key you need to use to deploy with hardhat. It overrides the default env var mechanism of hardhat. Use the [Github action extension for vscode](https://marketplace.visualstudio.com/items?itemName=GitHub.vscode-github-actions) or your Github's project settings web page (i.e https://github.com/<MY_ALIAS>/<MY_PROJECT>/settings/secrets/actions)
    - VERCEL configuration can be found [here](https://vercel.com/guides/how-can-i-use-github-actions-with-vercel) 
      - VERCEL_TOKEN: Your personal Vercel token that your need to create on your Vercel's account
-     - VERCEL_PROJECT_ID: The ID of your project 
      - VERCEL_ORG_ID: The ID of your organization
 
 1. Each time that you push your code, github action will run all the jobs. Once the run is finish, you can follow the deployment on the Vercel deployment page (i.e https://vercel.com/<ORG_NAME>/<PROJECT_NAME>/deployments) and the get the url of your application
