@@ -101,7 +101,6 @@ jobs:
       - name: Link to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: team_BK6SJNLRiDBIOydgfpwX8eUO
         run: vercel link --yes --token=$VERCEL_TOKEN --cwd ./app --project polymarkteth
       - name: Restore hardhat-artifacts
         uses: actions/download-artifact@v4
