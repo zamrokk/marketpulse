@@ -286,13 +286,15 @@
    ```
 
    - The contract is a bet application where any user can place bets over a predefined poll
-   - Bet structure is composed by an id, an owner address, an option representing the choice and the bet amount (in wei units). Note : The id is randomly generated in order to showcase how to use and indexer to list all the keys of the bet **mapping** and retrieve it for calculation. An optimized implementation would consist on removing the bets mapping and just keep some aggregated variables for the odd calculation, as it, it also remove the need of an indexer.
-   - You can place bets as many as you want
-   - Once bets are done, you can click to resolve the winner and transactions are executed by the contract. Note : On next chapter, an Oracle is introduced to do this job instead of a clickable-by-everyone button
+   - Bet structure is composed by an id, an owner address, an option representing the choice and the bet amount (in wei units). Note : The id is randomly generated in order to showcase how to use and indexer to list all the keys of the bet **mapping** and retrieve it for calculation. An optimized implementation would remove the bets themselves and keep only some aggregated variables, saving storage space and removing the need for an indexer.
+   - You can place as many bets as you want.
+   - When the bets are done, you can click to resolve the winner and make the contract run the transactions. Note : On next chapter, an Oracle is introduced to do this job instead of a clickable-by-everyone button
    - Odd calculation is using safe math to avoid unexpected and dangerous behaviors
 
-1. Compile
+1. Compile the smart contract
 
    ```bash
    npx hardhat compile
    ```
+
+   > Note : If you have some warnings, just ignore it as it does not have impact for the rest

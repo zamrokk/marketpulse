@@ -2,13 +2,15 @@
 
 > Prerequisites : Install [Deno](https://docs.deno.com/runtime/getting_started/installation/)
 
-1. Create a frontend app. Here we use deno, vite and React to start a default project
+1. Create a frontend app on the same project root directory. Here we use deno, vite and React to start a default project
 
    ```bash
    deno run -A npm:create-vite@latest
    ```
 
-1. Choose a name (like **app**), **React** framework and **Typescript**
+   > Note : For Mac users, deno can have some issues, better to use directly npm like this : ```npm create vite@latest```
+
+1. Choose a name (like **app**, as it is used on the scripts later), **React** framework and **Typescript**
 
 1. Run the commands of the output. Here is my case :
 
@@ -20,7 +22,7 @@
 
    The server is running
 
-1. Go back to your project and import the **Viem** library for blockchain interactions, **thirdweb** for the wallet connection, **bignumber** because we are doing calculations on large numbers
+1. Go back to your frontend **app** project and import the **Viem** library for blockchain interactions, **thirdweb** for the wallet connection, **bignumber** because we are doing calculations on large numbers
 
    ```bash
    npm i viem thirdweb bignumber.js
@@ -32,13 +34,13 @@
    npm i -D typechain @typechain/ethers-v6
    ```
 
-1. Change your **./app/package.json** file to add this script below. It copied the output address of the last deployed contract into your source files and call typechain to generate types from your abi file
+1. Change your **./package.json** frontend **app** file to add this script below. It copied the output address of the last deployed contract into your source files and call typechain to generate types from your abi file from Hardhat folders
 
    ```json
     "postinstall": "cp ../ignition/deployments/chain-128123/deployed_addresses.json ./src  &&  typechain --target=ethers-v6 --out-dir=./src/typechain-types --show-stack-traces ../artifacts/contracts/Polymarkteth.sol/Polymarkteth.json",
    ```
 
-1. Run **npm i** to call the postinstall script automatically. You should see new files on your **./app/src** folder
+1. Run **npm i** to call the postinstall script automatically. You should see new files and folder on your **./src** frontend **app** folder
 
 1. Create an utility file to manage Viem errors. Better to have nicer error display than technical and not helpful ones
 

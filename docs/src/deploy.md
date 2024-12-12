@@ -2,13 +2,13 @@
 
 1. Deploy the contract locally
 
-   1. Prepare a module for the ignition plugin of Hardhat. Rename the default file first
+   1. Prepare a module for the ignition plugin of Hardhat. The module will be use as the default script for deployment. Rename the default file first
 
       ```
       mv ./ignition/modules/Lock.ts ./ignition/modules/Polymarkteth.ts
       ```
 
-   1. Edit the module file with
+   1. The module dpeloy the contract and call the Ping endpoint just after. Edit the module file with
 
       ```TypeScript
       // This setup uses Hardhat Ignition to manage smart contract deployments.
@@ -27,16 +27,23 @@
       export default PolymarktethModule;
       ```
 
-   1. Start a local Ethereum node and deploy the contract
+   1. Start a local Ethereum node
 
       ```bash
       npx hardhat node
+      ```
+
+   1. Deploy the contract using hardhat ignition
+
+      ```bash
       npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --reset --network localhost
       ```
 
       > Note : You can choose to work with a local Ethereum node but we recommend to use Etherlink testnet as it is persistent, free and most tools, indexers, etc... are already deployed. Check that your contract can deployed without problem, stop the node and pass to the next step
 
-1. Deploy the contract on Etherlink
+1. Deploy the contract on Etherlink (testnet)
+
+   > Note : if you local node is running, just kill the process as it is no more needed
 
    1. A custom network to Etherlink (and Etherlink testnet) needs to be registered. Edit the Hardhat configuration file **hardhat.config.ts**
 
@@ -88,12 +95,7 @@
               },
             },
           ],
-        },
-        sourcify: {
-          // Disabled by default
-          // Doesn't need an API key
-          enabled: false,
-        },
+        }
       };
 
       export default config;
@@ -116,7 +118,7 @@
       npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --network etherlinkTestnet
       ```
 
-   1. A successfull output should look like this
+   1. A successful output should look like this
 
       ```logs
       Compiled 5 Solidity files successfully (evm target: paris).

@@ -32,7 +32,7 @@ In this tutorial, we use [Hardhat](https://hardhat.org/tutorial/creating-a-new-h
     npm i @openzeppelin/contracts
     ```
 
-1. Install dev libraries for viem and verify. Viem 
+1. Install dev libraries for Viem and verify 
 
     ```bash
     npm i -D @nomicfoundation/hardhat-verify
