@@ -1,7 +1,7 @@
 {
-  "name": "polymarkteth",
+  "name": "marketpulse",
   "version": "1.0.0",
-  "description": "polymarket on etherlink",
+  "description": "bet platform on etherlink",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

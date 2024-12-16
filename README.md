@@ -1,7 +1,7 @@
-# polymarkteth
-polymarket on etherlink
+# marketpulse
+bet platform on etherlink
 
-[Documentation](https://zamrokk.github.io/polymarkteth/)
+[Documentation](https://zamrokk.github.io/marketpulse/)
 
 # Docs
 

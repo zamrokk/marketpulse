@@ -1,9 +1,9 @@
 # Testing
 
-1. Replace the default **./test/Lock.ts** test file by this one **./test/Polymarkteth.ts**
+1. Replace the default **./test/Lock.ts** test file by this one **./test/Marketpulse.ts**
 
    ```bash
-   mv ./test/Lock.ts ./test/Polymarkteth.ts
+   mv ./test/Lock.ts ./test/Marketpulse.ts
    ```
 
 1. Edit the file with this code
@@ -24,7 +24,7 @@
      PENDING = 2,
    }
 
-   describe("Polymarkteth", function () {
+   describe("Marketpulse", function () {
      // We define a fixture to reuse the same setup in every test.
      // We use loadFixture to run this setup once, snapshot that state,
      // and reset Hardhat Network to that snapshot in every test.
@@ -37,8 +37,8 @@
          "0x0",
        ]);
 
-       const polymarktethContract = await hre.viem.deployContract(
-         "Polymarkteth",
+       const marketpulseContract = await hre.viem.deployContract(
+         "Marketpulse",
          []
        );
 
@@ -53,7 +53,7 @@
        });
 
        return {
-         polymarktethContract,
+         marketpulseContract,
          owner,
          bob,
          publicClient,
@@ -62,11 +62,11 @@
 
      describe("init function", function () {
        it("should be initialized", async function () {
-         const { polymarktethContract, owner } = await loadFixture(
+         const { marketpulseContract, owner } = await loadFixture(
            deployContractFixture
          );
 
-         const ownerFromStorage = await polymarktethContract.read.admin();
+         const ownerFromStorage = await marketpulseContract.read.admin();
          console.log("ownerFromStorage", ownerFromStorage);
          expect(ownerFromStorage.toLowerCase()).to.equal(
            owner.account.address.toLowerCase()
@@ -74,14 +74,14 @@
        });
 
        it("should return Pong", async function () {
-         const { polymarktethContract, publicClient } = await loadFixture(
+         const { marketpulseContract, publicClient } = await loadFixture(
            deployContractFixture
          );
 
-         await polymarktethContract.write.ping({ gasPrice: 0n });
+         await marketpulseContract.write.ping({ gasPrice: 0n });
 
          const logs = await publicClient.getContractEvents({
-           abi: polymarktethContract.abi,
+           abi: marketpulseContract.abi,
            eventName: "Pong",
          });
          console.log(logs);
@@ -100,17 +100,17 @@
        it("should run the full scenario", async () => {
          console.log("should return a list of empty bets");
          const {
-           polymarktethContract,
+           marketpulseContract,
            owner: alice,
            publicClient,
            bob,
          } = await loadFixture(deployContractFixture);
 
-         expect(await polymarktethContract.read.betKeys.length).to.equal(0);
+         expect(await marketpulseContract.read.betKeys.length).to.equal(0);
 
          console.log("should return 200");
 
-         const betTrump1IdHash = await polymarktethContract.write.bet(
+         const betTrump1IdHash = await marketpulseContract.write.bet(
            ["trump", parseEther("1")],
            { value: parseEther("1"), gasPrice: 0n }
          );
@@ -123,14 +123,14 @@
 
          expect(receipt.status).equals("success");
 
-         betKeys = [...(await polymarktethContract.read.getBetKeys())];
+         betKeys = [...(await marketpulseContract.read.getBetKeys())];
          console.log("betKeys", betKeys);
 
          betTrump1Id = betKeys[0];
 
          console.log("should find the bet");
 
-         const betTrump1 = await polymarktethContract.read.getBets([betTrump1Id]);
+         const betTrump1 = await marketpulseContract.read.getBets([betTrump1Id]);
 
          expect(betTrump1).not.null;
 
@@ -142,7 +142,7 @@
 
          console.log("should get a correct odd of 0.9 (including fees)");
 
-         let odd = await polymarktethContract.read.calculateOdds([
+         let odd = await marketpulseContract.read.calculateOdds([
            "trump",
            parseEther("1"),
          ]);
@@ -156,7 +156,7 @@
            "0x0",
          ]);
 
-         const betKamala2IdHash = await polymarktethContract.write.bet(
+         const betKamala2IdHash = await marketpulseContract.write.bet(
            ["kamala", parseEther("2")],
            { value: parseEther("2"), account: bob.account.address, gasPrice: 0n }
          );
@@ -169,14 +169,14 @@
 
          expect(receipt.status).equals("success");
 
-         betKeys = [...(await polymarktethContract.read.getBetKeys())];
+         betKeys = [...(await marketpulseContract.read.getBetKeys())];
          console.log("betKeys", betKeys);
 
          const betKamala2Id = betKeys[1];
 
          console.log("should find the bet");
 
-         const betKamala2 = await polymarktethContract.read.getBets([
+         const betKamala2 = await marketpulseContract.read.getBets([
            betKamala2Id,
          ]);
 
@@ -190,7 +190,7 @@
 
          console.log("should get a correct odd of 1.9 for trump (including fees)");
 
-         odd = await polymarktethContract.read.calculateOdds([
+         odd = await marketpulseContract.read.calculateOdds([
            "trump",
            parseEther("1"),
          ]);
@@ -201,7 +201,7 @@
            "should get a correct odd of 1.23333 for kamala (including fees)"
          );
 
-         odd = await polymarktethContract.read.calculateOdds([
+         odd = await marketpulseContract.read.calculateOdds([
            "kamala",
            parseEther("1"),
          ]);
@@ -212,14 +212,14 @@
 
          console.log("should return 200 with all correct balances");
 
-         await polymarktethContract.write.resolveResult(
+         await marketpulseContract.write.resolveResult(
            ["trump", BET_RESULT.WIN],
            { gasPrice: 0n }
          );
 
          expect(
            await publicClient.getBalance({
-             address: polymarktethContract.address,
+             address: marketpulseContract.address,
            })
          ).equals(parseEther("0.1"));
          expect(
@@ -232,14 +232,14 @@
 
          console.log("should have state finalized");
 
-         const result = await polymarktethContract.read.status();
+         const result = await marketpulseContract.read.status();
          expect(result).not.null;
          expect(result).equals(BET_RESULT.WIN);
 
          console.log("should return 500 if we try to reapply results");
 
          try {
-           await polymarktethContract.write.resolveResult(
+           await marketpulseContract.write.resolveResult(
              ["trump", BET_RESULT.WIN],
              { gasPrice: 0n }
            );

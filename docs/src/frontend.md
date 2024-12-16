@@ -37,7 +37,7 @@
 1. Change your **./package.json** frontend **app** file to add this script below. It copied the output address of the last deployed contract into your source files and call typechain to generate types from your abi file from Hardhat folders
 
    ```json
-    "postinstall": "cp ../ignition/deployments/chain-128123/deployed_addresses.json ./src  &&  typechain --target=ethers-v6 --out-dir=./src/typechain-types --show-stack-traces ../artifacts/contracts/Polymarkteth.sol/Polymarkteth.json",
+    "postinstall": "cp ../ignition/deployments/chain-128123/deployed_addresses.json ./src  &&  typechain --target=ethers-v6 --out-dir=./src/typechain-types --show-stack-traces ../artifacts/contracts/Marketpulse.sol/Marketpulse.json",
    ```
 
 1. Run **npm i** to call the postinstall script automatically. You should see new files and folder on your **./src** frontend **app** folder
@@ -156,7 +156,7 @@
 1. Edit `App.tsx`
 
    ```Typescript
-   import { Polymarkteth, Polymarkteth__factory } from "./typechain-types";
+   import { Marketpulse, Marketpulse__factory } from "./typechain-types";
 
    import BigNumber from "bignumber.js";
    import { useEffect, useState } from "react";
@@ -215,7 +215,7 @@
    const [winner, setWinner] = useState<string | undefined>(undefined);
    const [fees, setFees] = useState<number>(0);
    const [betKeys, setBetKeys] = useState<bigint[]>([]);
-   const [_bets, setBets] = useState<Polymarkteth.BetStruct[]>([]);
+   const [_bets, setBets] = useState<Marketpulse.BetStruct[]>([]);
 
    const reload = async () => {
        if (!account?.address) {
@@ -223,10 +223,10 @@
        } else {
        const dataStatus = await readContract({
            contract: getContract({
-           abi: Polymarkteth__factory.abi,
+           abi: Marketpulse__factory.abi,
            client: thirdwebClient,
            chain: defineChain(etherlinkTestnet.id),
-           address: CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
+           address: CONTRACT_ADDRESS_JSON["MarketpulseModule#Marketpulse"],
            }),
            method: "status",
            params: [],
@@ -234,10 +234,10 @@
 
        const dataWinner = await readContract({
            contract: getContract({
-           abi: Polymarkteth__factory.abi,
+           abi: Marketpulse__factory.abi,
            client: thirdwebClient,
            chain: defineChain(etherlinkTestnet.id),
-           address: CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
+           address: CONTRACT_ADDRESS_JSON["MarketpulseModule#Marketpulse"],
            }),
            method: "winner",
            params: [],
@@ -245,10 +245,10 @@
 
        const dataFEES = await readContract({
            contract: getContract({
-           abi: Polymarkteth__factory.abi,
+           abi: Marketpulse__factory.abi,
            client: thirdwebClient,
            chain: defineChain(etherlinkTestnet.id),
-           address: CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
+           address: CONTRACT_ADDRESS_JSON["MarketpulseModule#Marketpulse"],
            }),
            method: "FEES",
            params: [],
@@ -256,10 +256,10 @@
 
        const dataBetKeys = await readContract({
            contract: getContract({
-           abi: Polymarkteth__factory.abi,
+           abi: Marketpulse__factory.abi,
            client: thirdwebClient,
            chain: defineChain(etherlinkTestnet.id),
-           address: CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
+           address: CONTRACT_ADDRESS_JSON["MarketpulseModule#Marketpulse"],
            }),
            method: "getBetKeys",
            params: [],
@@ -298,15 +298,15 @@
                async (betKey) =>
                (await readContract({
                    contract: getContract({
-                   abi: Polymarkteth__factory.abi,
+                   abi: Marketpulse__factory.abi,
                    client: thirdwebClient,
                    chain: defineChain(etherlinkTestnet.id),
                    address:
-                       CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
+                       CONTRACT_ADDRESS_JSON["MarketpulseModule#Marketpulse"],
                    }),
                    method: "getBets",
                    params: [betKey],
-               })) as unknown as Polymarkteth.BetStruct
+               })) as unknown as Marketpulse.BetStruct
            )
            );
            setBets(bets);
@@ -336,10 +336,10 @@
        try {
            const preparedContractCall = await prepareContractCall({
            contract: getContract({
-               abi: Polymarkteth__factory.abi,
+               abi: Marketpulse__factory.abi,
                client: thirdwebClient,
                chain: defineChain(etherlinkTestnet.id),
-               address: CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
+               address: CONTRACT_ADDRESS_JSON["MarketpulseModule#Marketpulse"],
            }),
            method: "ping",
            params: [],
@@ -365,7 +365,7 @@
        } catch (error) {
            const errorParsed = extractErrorDetails(
            error,
-           Polymarkteth__factory.abi
+           Marketpulse__factory.abi
            );
            setError(errorParsed.message);
        }
@@ -386,10 +386,10 @@
        const runFunction = async () => {
        try {
            const contract = getContract({
-           abi: Polymarkteth__factory.abi,
+           abi: Marketpulse__factory.abi,
            client: thirdwebClient,
            chain: defineChain(etherlinkTestnet.id),
-           address: CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
+           address: CONTRACT_ADDRESS_JSON["MarketpulseModule#Marketpulse"],
            });
 
            const preparedContractCall = await prepareContractCall({
@@ -419,7 +419,7 @@
        } catch (error) {
            const errorParsed = extractErrorDetails(
            error,
-           Polymarkteth__factory.abi
+           Marketpulse__factory.abi
            );
            setError(errorParsed.message);
        }
@@ -546,10 +546,10 @@
        try {
        const preparedContractCall = await prepareContractCall({
            contract: getContract({
-           abi: Polymarkteth__factory.abi,
+           abi: Marketpulse__factory.abi,
            client: thirdwebClient,
            chain: defineChain(etherlinkTestnet.id),
-           address: CONTRACT_ADDRESS_JSON["PolymarktethModule#Polymarkteth"],
+           address: CONTRACT_ADDRESS_JSON["MarketpulseModule#Marketpulse"],
            }),
            method: "resolveResult",
            params: [option, BET_RESULT.WIN],
@@ -575,7 +575,7 @@
 
        setError("");
        } catch (error) {
-       const errorParsed = extractErrorDetails(error, Polymarkteth__factory.abi);
+       const errorParsed = extractErrorDetails(error, Marketpulse__factory.abi);
        setError(errorParsed.message);
        }
    };
@@ -584,7 +584,7 @@
        <>
        <header>
            <span style={{ display: "flex" }}>
-           <h1>Polymarktez </h1>
+           <h1>Market Pulse</h1>
 
            <div className="flex items-center gap-4">
                <ConnectButton
@@ -694,7 +694,7 @@
    ```
 
    Explanations : 
-   - **import { Polymarkteth, Polymarkteth__factory } from "./typechain-types";** : to have the contract ABI and contract structures
+   - **import { Marketpulse, Marketpulse__factory } from "./typechain-types";** : to have the contract ABI and contract structures
    - **import CONTRACT_ADDRESS_JSON from "./deployed_addresses.json";** : to find the last deployed address automatically
    - **const wallets = [inAppWallet(...),createWallet(...)}** : Here is the configuration for the thirdweb wallet. Look at the [Thirdweb playground](https://playground.thirdweb.com/connect/sign-in/button?tab=code) to play with the generator
    - **useActiveAccount** : Thirdweb React hooks and functions are just wrapper over the Viem library. Here is to get the active account

@@ -5,7 +5,7 @@
    1. Prepare a module for the ignition plugin of Hardhat. The module will be use as the default script for deployment. Rename the default file first
 
       ```
-      mv ./ignition/modules/Lock.ts ./ignition/modules/Polymarkteth.ts
+      mv ./ignition/modules/Lock.ts ./ignition/modules/Marketpulse.ts
       ```
 
    1. The module dpeloy the contract and call the Ping endpoint just after. Edit the module file with
@@ -16,15 +16,15 @@
 
       import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
-      const PolymarktethModule = buildModule("PolymarktethModule", (m) => {
-        const PolymarktethContract = m.contract("Polymarkteth", []);
+      const MarketpulseModule = buildModule("MarketpulseModule", (m) => {
+        const MarketpulseContract = m.contract("Marketpulse", []);
 
-        m.call(PolymarktethContract, "ping", []);
+        m.call(MarketpulseContract, "ping", []);
 
-        return { PolymarktethContract };
+        return { MarketpulseContract };
       });
 
-      export default PolymarktethModule;
+      export default MarketpulseModule;
       ```
 
    1. Start a local Ethereum node
@@ -36,7 +36,7 @@
    1. Deploy the contract using hardhat ignition
 
       ```bash
-      npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --reset --network localhost
+      npx hardhat ignition deploy ignition/modules/Marketpulse.ts --reset --network localhost
       ```
 
       > Note : You can choose to work with a local Ethereum node but we recommend to use Etherlink testnet as it is persistent, free and most tools, indexers, etc... are already deployed. Check that your contract can deployed without problem, stop the node and pass to the next step
@@ -115,7 +115,7 @@
    1. Deploy the contract to Etherlink testnet network
 
       ```bash
-      npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --network etherlinkTestnet
+      npx hardhat ignition deploy ignition/modules/Marketpulse.ts --network etherlinkTestnet
       ```
 
    1. A successful output should look like this
@@ -124,19 +124,19 @@
       Compiled 5 Solidity files successfully (evm target: paris).
       Hardhat Ignition 🚀
 
-      Deploying [ PolymarktethModule ]
+      Deploying [ MarketpulseModule ]
 
       Batch #1
-        Executed PolymarktethModule#Polymarkteth
+        Executed MarketpulseModule#Marketpulse
 
       Batch #2
-        Executed PolymarktethModule#Polymarkteth.ping
+        Executed MarketpulseModule#Marketpulse.ping
 
-      [ PolymarktethModule ] successfully deployed 🚀
+      [ MarketpulseModule ] successfully deployed 🚀
 
       Deployed Addresses
 
-      PolymarktethModule#Polymarkteth - 0x9a8aD93E7bE3fDCA9667D457cecBE24C8ee7509f
+      MarketpulseModule#Marketpulse - 0x9a8aD93E7bE3fDCA9667D457cecBE24C8ee7509f
       ```
 
 1. Verify your contract. A best practice is to publish your source code and verify it on an explorer. Replace the **<CONTRACT_ADDRESS>** with yours. Note : you can also pass the --verify as an argument on the deployment command

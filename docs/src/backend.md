@@ -2,10 +2,10 @@
 
 1. Remove the default Solidity smart contract **Lock.sol** on the **./contracts** folder
 
-1. Create a new file **Polymarkteth.sol** on the **./contracts** folder
+1. Create a new file **Marketpulse.sol** on the **./contracts** folder
 
    ```bash
-   touch ./contracts/Polymarkteth.sol
+   touch ./contracts/Marketpulse.sol
    ```
 
 1. Edit the file with this code
@@ -20,11 +20,11 @@
    import "@openzeppelin/contracts/utils/math/Math.sol";
 
    /**
-    * @title Polymarkteth
+    * @title Marketpulse
    * @author Benjamin Fuentes
    * @notice odds are
    */
-   contract Polymarkteth {
+   contract Marketpulse {
        using Math for uint256;
 
        struct Bet {

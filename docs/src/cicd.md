@@ -9,7 +9,7 @@ Here is an example of one using the **Github** config files and [Vercel](https:/
    ```bash
    mkdir /github
    mkdir /github/workflows
-   touch /github/workflows/polymarkteth.yml
+   touch /github/workflows/marketpulse.yml
    ```
 
 1. Edit the file to include a CI / CD pipeline
@@ -63,7 +63,7 @@ Here is an example of one using the **Github** config files and [Vercel](https:/
              node-version: 18
              cache: "npm"
          - run: npm ci
-         - run: yes | HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }}  npx hardhat ignition deploy ignition/modules/Polymarkteth.ts --verify --reset --network etherlinkTestnet
+         - run: yes | HARDHAT_VAR_DEPLOYER_PRIVATE_KEY=${{ secrets.DEPLOYER_PRIVATE_KEY }}  npx hardhat ignition deploy ignition/modules/Marketpulse.ts --verify --reset --network etherlinkTestnet
          - name: Cache hardhat-ignition
            uses: actions/upload-artifact@v4
            with:
@@ -92,15 +92,15 @@ Here is an example of one using the **Github** config files and [Vercel](https:/
              node-version: 18
              cache: "npm"
          - run: npm ci
-           working-directory: ./polymarkteth
+           working-directory: ./marketpulse
          - run: more ./ignition/deployments/chain-128123/deployed_addresses.json
          - run: npm run build
-           working-directory: ./polymarkteth
+           working-directory: ./marketpulse
          - name: Cache app build
            uses: actions/upload-artifact@v4
            with:
              name: ${{ runner.os }}-build-app-artifacts
-             path: ./polymarkteth/dist
+             path: ./marketpulse/dist
              retention-days: 1
      deploy-app:
        needs: build-app
@@ -118,7 +118,7 @@ Here is an example of one using the **Github** config files and [Vercel](https:/
          - name: Link to Vercel
            env:
              VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-           run: vercel link --yes --token=$VERCEL_TOKEN --cwd ./app --project polymarkteth
+           run: vercel link --yes --token=$VERCEL_TOKEN --cwd ./app --project marketpulse
          - name: Restore hardhat-artifacts
            uses: actions/download-artifact@v4
            with:
@@ -132,11 +132,11 @@ Here is an example of one using the **Github** config files and [Vercel](https:/
          - name: Prepare build for Vercel
            env:
              VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-           run: vercel build --prod --yes --token=$VERCEL_TOKEN --cwd=./polymarkteth
+           run: vercel build --prod --yes --token=$VERCEL_TOKEN --cwd=./marketpulse
          - name: Deploy to Vercel
            env:
              VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-           run: vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN --cwd=./polymarkteth
+           run: vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN --cwd=./marketpulse
    ```
 
 1. There a different jobs :
