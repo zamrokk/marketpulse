@@ -1,12 +1,12 @@
-# Testing
+# Test the contract
 
-1. Replace the default **./test/Lock.ts** test file by this one **./test/Marketpulse.ts**
+1. Rename the default `./test/Lock.ts` test file to `./test/Marketpulse.ts`:
 
    ```bash
    mv ./test/Lock.ts ./test/Marketpulse.ts
    ```
 
-1. Edit the file with this code
+1. Replace the default file with this code:
 
    ```TypeScript
    import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
@@ -253,7 +253,7 @@
    });
    ```
 
-1. Test it
+1. Run the tests with Hardhat:
 
    ```bash
    npx hardhat test

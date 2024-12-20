@@ -1,14 +1,19 @@
-# Backend development
+# Create a smart contract
 
-1. Remove the default Solidity smart contract **Lock.sol** on the **./contracts** folder
+Etherlink runs contracts in the Solidity language.
+For more information about Solidity, see https://docs.soliditylang.org.
 
-1. Create a new file **Marketpulse.sol** on the **./contracts** folder
+Follow these steps to set up a Solidity smart contract:
+
+1. Remove the default Solidity smart contract `Lock.sol` in the `./contracts` folder.
+
+1. Create a new file named `Marketpulse.sol` in the `./contracts` folder.
 
    ```bash
    touch ./contracts/Marketpulse.sol
    ```
 
-1. Edit the file with this code
+1. Put this code in the file:
 
    ```Solidity
    // SPDX-License-Identifier: MIT
@@ -285,16 +290,22 @@
    }
    ```
 
-   - The contract is a bet application where any user can place bets over a predefined poll
-   - Bet structure is composed by an id, an owner address, an option representing the choice and the bet amount (in wei units). Note : The id is randomly generated in order to showcase how to use and indexer to list all the keys of the bet **mapping** and retrieve it for calculation. An optimized implementation would remove the bets themselves and keep only some aggregated variables, saving storage space and removing the need for an indexer.
-   - You can place as many bets as you want.
-   - When the bets are done, you can click to resolve the winner and make the contract run the transactions. Note : On next chapter, an Oracle is introduced to do this job instead of a clickable-by-everyone button
-   - Odd calculation is using safe math to avoid unexpected and dangerous behaviors
+   This contract is a bet application where any user can place bets on a predefined poll by calling `bet`.
+   Each bet includes an ID, the address of the submitter, an option that represents their choice, and the bet amount in wei.
 
-1. Compile the smart contract
+   The ID is randomly generated to showcase how to use an indexer to list all the keys of the bet `mapping` and retrieve them for calculation.
+   An optimized implementation would remove the bets themselves and keep only some aggregated variables, saving storage space and removing the need for an indexer.
+
+   Users can place as many bets as they want.
+   When you are ready to resolve the bets, you can call `resolveResult` and make the contract pay the correct bets.
+   In production, you could set up an oracle to do this job instead of having to call the entrypoint manually.
+
+   The contract calculates odds for the bet using safe math to avoid unexpected and dangerous behaviors.
+
+1. Compile the smart contract:
 
    ```bash
    npx hardhat compile
    ```
 
-   > Note : If you have some warnings, just ignore it as it does not have impact for the rest
+   You can ignore any warnings in the console because they do not affect the application.

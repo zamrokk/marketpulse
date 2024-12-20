@@ -1,18 +1,18 @@
-# Frontend
+# Create the frontend application
 
-> Prerequisites : Install [Deno](https://docs.deno.com/runtime/getting_started/installation/)
+Before you begin, install [Deno](https://docs.deno.com/runtime/getting_started/installation/).
 
-1. Create a frontend app on the same project root directory. Here we use deno, vite and React to start a default project
+1. Create a frontend app on the same project root directory. Here we use deno, Vite and React to start a default project;
 
    ```bash
    deno run -A npm:create-vite@latest
    ```
 
-   > Note : For Mac users, deno can have some issues, better to use directly npm like this : ```npm create vite@latest```
+   If you have trouble with Deno, as on some Mac computers, you can create a non-deno project that works in a similar way by running this command: `npm create vite@latest`.
 
-1. Choose a name (like **app**, as it is used on the scripts later), **React** framework and **Typescript**
+1. Choose a name for the frontend project (such as `app`, which is what the examples later use), select the `React` framework, and select the `Typescript` language.
 
-1. Run the commands of the output. Here is my case :
+1. Run the commands in the Deno output, as in this example:
 
    ```bash
    cd app
@@ -20,35 +20,37 @@
    npm run dev
    ```
 
-   The server is running
+   Now the Deno server is running a starter frontend application.
 
-1. Go back to your frontend **app** project and import the **Viem** library for blockchain interactions, **thirdweb** for the wallet connection, **bignumber** because we are doing calculations on large numbers
+1. Go back to your frontend `app` project and import the `Viem` library for blockchain interactions, `thirdweb` for the wallet connection, and `bignumber` for calculations on large numbers:
 
    ```bash
    npm i viem thirdweb bignumber.js
    ```
 
-1. Add **typechain** library to dev dependency to generate your contracts structures and abi for Typescript
+1. Add the `typechain` library to generate your contract structures and ABI for Typescript:
 
    ```bash
    npm i -D typechain @typechain/ethers-v6
    ```
 
-1. Change your **./package.json** frontend **app** file to add this script below. It copied the output address of the last deployed contract into your source files and call typechain to generate types from your abi file from Hardhat folders
+1. Add this script to the `./package.json` file in the frontend application:
 
    ```json
     "postinstall": "cp ../ignition/deployments/chain-128123/deployed_addresses.json ./src  &&  typechain --target=ethers-v6 --out-dir=./src/typechain-types --show-stack-traces ../artifacts/contracts/Marketpulse.sol/Marketpulse.json",
    ```
 
-1. Run **npm i** to call the postinstall script automatically. You should see new files and folder on your **./src** frontend **app** folder
+   This script copies the output address of the last deployed contract into your source files and calls typechain to generate types from the ABI file from the Hardhat folders.
 
-1. Create an utility file to manage Viem errors. Better to have nicer error display than technical and not helpful ones
+1. Run `npm i` to call the postinstall script automatically. You should see new files and folders in the `./src` folder of the frontend application.
+
+1. Create a utility file to manage Viem errors. Better to have nicer error display than technical and not helpful ones
 
    ```bash
    touch ./app/src/DecodeEvmTransactionLogsArgs.ts
    ```
 
-1. Edit **./app/src/DecodeEvmTransactionLogsArgs.ts** with
+1. Put this code in the `./app/src/DecodeEvmTransactionLogsArgs.ts` file:
 
    ```Typescript
    import {
@@ -133,7 +135,7 @@
 
    ```
 
-1. Edit **./app/src/main.tsx**, an add **Thirdweb** provider around your application. You need to replace **<THIRDWEB_CLIENTID>** below by your own clientId configured on the [Thirdweb dashboard](https://portal.thirdweb.com/typescript/v4/getting-started#initialize-the-sdk)
+1. Edit `./app/src/main.tsx` to add a `Thirdweb` provider around your application. In the following example, replace `<THIRDWEB_CLIENTID>` with your own clientId configured on the [Thirdweb dashboard](https://portal.thirdweb.com/typescript/v4/getting-started#initialize-the-sdk):
 
    ```Typescript
    import { createRoot } from "react-dom/client";
@@ -153,7 +155,7 @@
    );
    ```
 
-1. Edit `App.tsx`
+1. Edit `App.tsx` to have this code:
 
    ```Typescript
    import { Marketpulse, Marketpulse__factory } from "./typechain-types";
@@ -693,19 +695,18 @@
    }
    ```
 
-   Explanations : 
-   - **import { Marketpulse, Marketpulse__factory } from "./typechain-types";** : to have the contract ABI and contract structures
-   - **import CONTRACT_ADDRESS_JSON from "./deployed_addresses.json";** : to find the last deployed address automatically
-   - **const wallets = [inAppWallet(...),createWallet(...)}** : Here is the configuration for the thirdweb wallet. Look at the [Thirdweb playground](https://playground.thirdweb.com/connect/sign-in/button?tab=code) to play with the generator
-   - **useActiveAccount** : Thirdweb React hooks and functions are just wrapper over the Viem library. Here is to get the active account
-   - **const reload = async () => {** : function used to refresh the smart contract storage (status,winner,fees and mapping keys)
-   - **useEffect...[betKeys]);** : React effect to reload all bets from the storage when betKeys is updated 
-   - **const Ping = () => {** : This function is just a technical endpoint to test if your smart contract interaction works. It can be removed for production
-   - **const BetFunction = () => {** : This function sends your bet to the smart contract, passing along the correct amount of XTZ
-   - **const calculateOdds = (option: string, amount?: bigint): BigNumber => {** : Similar the the onchain function calculating odds
+   Explanations :
+   - `import { Marketpulse, Marketpulse__factory } from "./typechain-types";`: Imports the contract ABI and contract structures
+   - `import CONTRACT_ADDRESS_JSON from "./deployed_addresses.json";`: Imports the address of the last deployed contract automatically
+   - `const wallets = [inAppWallet(...),createWallet(...)}`: Configures the Thirdweb wallet connection. Look at the [Thirdweb playground](https://playground.thirdweb.com/connect/sign-in/button?tab=code) to play with the generator.
+   - `useActiveAccount`: Uses Thirdweb React hooks and functions as a wrapper over the Viem library to get the active account.
+   - `const reload = async () => {`: Refreshes the smart contract storage (status, winner, fees and mapping keys).
+   - `useEffect...[betKeys]);`: React effect that reloads all bets from the storage when `betKeys` is updated.
+   - `const Ping = () => {`: Checks that the smart contract interaction works. It can be removed in production deployments.
+   - `const BetFunction = () => {`: Sends your bet to the smart contract, passing along the correct amount of XTZ.
+   - `const calculateOdds = (option: string, amount?: bigint): BigNumber => {`: Calculates the odds, similar to the onchain function in the smart contract.
 
-
-1. To fix the CSS for the page styling , edit `App.css` with
+1. To fix the CSS for the page styling, replace the `App.css` file with this code:
 
    ```css
    #root {
@@ -794,7 +795,7 @@
    }
    ```
 
-1. Edit also `index.css` with
+1. Replace the `index.css` file with this code:
 
    ```css
    :root {
@@ -910,32 +911,32 @@
    }
    ```
 
-1. Run your app
+1. Run the application:
 
    ```bash
    npm run dev
    ```
 
-1. Click on the **Connect** to login with one of your wallet
+1. In a web browser, click the **Connect** button to login with your wallet.
 
-1. Click on the Ping button at the bottom. It should stay green if you can interact with your smart contract with no error messages
+1. Click the **Ping** button at the bottom. It should stay green if you can interact with your smart contract with no error messages.
 
-1. Run a scenario
+1. Run a betting scenario:
 
-   1. Select **Donald Trump** on the select box on the right corner, choose a small amount like **0.00001 XTZ** and click on the **Bet button**.
+   1. Select **Donald Trump** on the select box on the right corner, choose a small amount like **0.00001 XTZ**, and click the **Bet** button.
 
-   1. Confirm the transaction
+   1. Confirm the transaction in your wallet.
 
-   1. Disconnect and connect with another account
+   1. Disconnect and connect with another account in your wallet.
 
-   1. Select **Kamala Harris** on the select box on the right corner, choose a small amount like **0.00001 XTZ** and click on the **Bet button**.
+   1. Select **Kamala Harris** on the select box on the right corner, choose a small amount like **0.00001 XTZ**, and click the **Bet** button.
 
-   1. Confirm the transaction
+   1. Confirm the transaction in your wallet.
 
-   1. Both candidates have 50% of chance to win. Note : Default platform fees have been set to 10%, odds calculation take it into account
+   Both candidates have 50% of chance to win. Note: Default platform fees have been set to 10%, and the odds calculation take those fees into account.
 
-   1. Click on one of the **Winner button** to resolve the poll
+   1. Click one of the **Winner** buttons to resolve the poll.
 
-   1. The page's right corner refreshed and displays the winner option of the poll
+   The page's right-hand corner refreshes and displays the winner of the poll and the application automatically pays the winning bets.
 
-   1. Find your transaction **resolveResult** on the explorer **https://testnet.explorer.etherlink.com**. In the **Transaction details>Internal txns**, you should see, if you are a winner, the expected amount transferred to you by the smart contract
+   1. Find your transaction `resolveResult` on the Etherlink Testnet explorer at `https://testnet.explorer.etherlink.com`. In the **Transaction details>Internal txns**, you should see, if you are a winner, the expected amount transferred to you by the smart contract.
