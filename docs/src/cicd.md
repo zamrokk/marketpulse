@@ -3,15 +3,15 @@
 There plenty of CICD tools on the market to build pipelines.
 Here is an example of one using the Github config files and [Vercel](https://vercel.com/) for free hosting:
 
-1. Create a Github pipeline:
+1. From the root folder that contains the HardHat config file and the frontend `app` folder, create a Github pipeline:
 
    ```bash
-   mkdir ./github
-   mkdir ./github/workflows
-   touch ./github/workflows/marketpulse.yml
+   mkdir .github
+   mkdir .github/workflows
+   touch .github/workflows/marketpulse.yml
    ```
 
-1. Edit the `./github/workflows/marketpulse.yml` file to include a CI/CD pipeline, as in this example:
+1. Edit the `.github/workflows/marketpulse.yml` file to include a CI/CD pipeline, as in this example:
 
    ```yml
    name: CI
