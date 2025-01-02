@@ -442,7 +442,7 @@ export default function App({ thirdwebClient }: AppProps) {
       <div id="content" style={{ display: "flex", paddingTop: 10 }}>
         <div style={{ width: "calc(66vw - 4rem)" }}>
           <img
-            alt=""
+            style={{maxHeight: "40vh"}}
             src="https://s.yimg.com/ny/api/res/1.2/UgmCx.2wzbFBh.IpbuHHJw--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyNDI7aD05MTQ-/https://media.zenfs.com/en/quartz.com/618289326ca67ac63b8e3cb49aaeb996"
           />
           <hr />

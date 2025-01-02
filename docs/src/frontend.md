@@ -602,7 +602,7 @@ Before you begin, install [Deno](https://docs.deno.com/runtime/getting_started/i
        <div id="content" style={{ display: "flex", paddingTop: 10 }}>
            <div style={{ width: "calc(66vw - 4rem)" }}>
             <img
-                alt=""
+                style={{maxHeight: "40vh"}}
                 src="https://s.yimg.com/ny/api/res/1.2/UgmCx.2wzbFBh.IpbuHHJw--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyNDI7aD05MTQ-/https://media.zenfs.com/en/quartz.com/618289326ca67ac63b8e3cb49aaeb996"
             />
            <hr />
@@ -751,7 +751,6 @@ Before you begin, install [Deno](https://docs.deno.com/runtime/getting_started/i
 
    footer {
      border-top: 1px solid #2c3f4f;
-     height: 100%;
    }
 
    hr {
