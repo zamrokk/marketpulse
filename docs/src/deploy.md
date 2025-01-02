@@ -1,14 +1,14 @@
-# Deployment
+# Deploy the contract
 
-1. Deploy the contract locally
+1. Deploy the contract locally with Hardbat:
 
-   1. Prepare a module for the ignition plugin of Hardhat. The module will be use as the default script for deployment. Rename the default file first
+   1. Prepare a module for the ignition plugin of Hardhat. The module will be use as the default script for deployment. Rename the default file first:
 
-      ```
+      ```bash
       mv ./ignition/modules/Lock.ts ./ignition/modules/Marketpulse.ts
       ```
 
-   1. The module dpeloy the contract and call the Ping endpoint just after. Edit the module file with
+   1. Replace the contents of the file with this code:
 
       ```TypeScript
       // This setup uses Hardhat Ignition to manage smart contract deployments.
@@ -27,25 +27,27 @@
       export default MarketpulseModule;
       ```
 
-   1. Start a local Ethereum node
+      This module deploys the contract and calls the Ping endpoint to verify that it deployed.
+
+   1. Start a local Ethereum node:
 
       ```bash
       npx hardhat node
       ```
 
-   1. Deploy the contract using hardhat ignition
+   1. In a different terminal window, deploy the contract using Hardhat ignition:
 
       ```bash
       npx hardhat ignition deploy ignition/modules/Marketpulse.ts --reset --network localhost
       ```
 
-      > Note : You can choose to work with a local Ethereum node but we recommend to use Etherlink testnet as it is persistent, free and most tools, indexers, etc... are already deployed. Check that your contract can deployed without problem, stop the node and pass to the next step
+      You can deploy the contract to any local Ethereum node but Etherlink is a good choice because it is persistent and free and most tools and indexers are already deployed on it.
 
-1. Deploy the contract on Etherlink (testnet)
+1. Check that your contract deployed without problems and stop the Hardhat node.
 
-   > Note : if you local node is running, just kill the process as it is no more needed
+1. Deploy the contract on Etherlink Testnet:
 
-   1. A custom network to Etherlink (and Etherlink testnet) needs to be registered. Edit the Hardhat configuration file **hardhat.config.ts**
+   1. In the Hardhat configuration file `hardhat.config.ts`, add Etherlink Mainnet and Testnet as custom networks:
 
       ```TypeScript
       import "@nomicfoundation/hardhat-toolbox-viem";
@@ -99,26 +101,27 @@
       };
 
       export default config;
-
       ```
 
-   1. We need also an account with some native tokens to deploy the contract. Follow this [guide](https://docs.etherlink.com/get-started/using-your-wallet) to create an account using a wallet. And then, use a [faucet](https://docs.etherlink.com/get-started/getting-testnet-tokens) to get some coins
+   1. Set up an Etherlink Testnet account with some native tokens to deploy the contract. Follow this [guide](https://docs.etherlink.com/get-started/using-your-wallet) to create an account using a wallet. Then use the [faucet](https://docs.etherlink.com/get-started/getting-testnet-tokens) to get some XTZ tokens on Etherlink Testnet.
 
-   1. Export your wallet account private key to use it on Hardhat deployment. Set the **DEPLOYER_PRIVATE_KEY** environment variable as follow
+   1. Export your account private key from your wallet app.
+
+   1. Set the private key as the value of the `DEPLOYER_PRIVATE_KEY` environment variable by running this command:
 
       ```bash
       npx hardhat vars set DEPLOYER_PRIVATE_KEY
       ```
 
-      On the prompt, enter/paste the value of your exported private key
+      On the prompt, enter or paste the value of your exported private key.
 
-   1. Deploy the contract to Etherlink testnet network
+   1. Deploy the contract to Etherlink Testnet network:
 
       ```bash
       npx hardhat ignition deploy ignition/modules/Marketpulse.ts --network etherlinkTestnet
       ```
 
-   1. A successful output should look like this
+      A successful output should look like this:
 
       ```logs
       Compiled 5 Solidity files successfully (evm target: paris).
@@ -139,12 +142,12 @@
       MarketpulseModule#Marketpulse - 0x9a8aD93E7bE3fDCA9667D457cecBE24C8ee7509f
       ```
 
-1. Verify your contract. A best practice is to publish your source code and verify it on an explorer. Replace the **<CONTRACT_ADDRESS>** with yours. Note : you can also pass the --verify as an argument on the deployment command
+1. Run this command to verify the contract, using the contract address as the value of `<CONTRACT_ADDRESS>`:
 
    ```bash
    npx hardhat verify --network etherlinkTestnet <CONTRACT_ADDRESS>
    ```
 
-Well done !
+   You can also pass the `--verify` switch to the deployment command to verify the contract as part of the deployment process.
 
-Next step is to create the frontend
+The next step is to create the frontend application.

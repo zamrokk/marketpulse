@@ -1,45 +1,45 @@
-# Etherlink setup
+# Set up a development environment for Etherlink
 
-> Etherlink is 100% compatible with Ethereum technology, you can use any tool for development among Hardhat, Foundry, Truffle Suite or Remix IDE: [Developer toolkits](https://docs.etherlink.com/building-on-etherlink/development-toolkits)
+> Etherlink is 100% compatible with Ethereum technology, which means that you can use any Ethereum-compatible tool for development, including Hardhat, Foundry, Truffle Suite, and Remix IDE.
+For more information on tools that work with Etherlink, see [Developer toolkits](https://docs.etherlink.com/building-on-etherlink/development-toolkits) in the Etherlink documentation.
 
-In this tutorial, we use [Hardhat](https://hardhat.org/tutorial/creating-a-new-hardhat-project)
+In this tutorial, you use [Hardhat](https://hardhat.org/tutorial/creating-a-new-hardhat-project) to manage development tasks such as compiling and testing smart contracts.
+You also use Viem, which is a lightweight, type-safe Ethereum library for JavaScript/TypeScript.
+It provides low-level, efficient blockchain interactions with minimal abstraction.
 
-1. [Install npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+1. [Install npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
 
-1. Initialize the project
+1. Initialize an NPM project:
 
     ```bash
-    npm init
+    npm init -y
     npm install -D typescript @types/node ts-node
     ```
 
-1. Install hardhat and initialize it
+1. Install hardhat and initialize it:
 
     ```bash
     npm install -D hardhat
     npx hardhat init
     ```
 
-1. Select `Create a TypeScript project (with Viem)`
+1. In the Hardhat prompts, select `Create a TypeScript project (with Viem)`.
 
-1. On `Do you want to install this sample project's dependencies with npm (@nomicfoundation/hardhat-toolbox-viem)? (Y/n)` answer : y
+1. At the prompt `Do you want to install this sample project's dependencies with npm (@nomicfoundation/hardhat-toolbox-viem)? (Y/n)` select `Y`.
 
-    > Viem : A lightweight, type-safe Ethereum library for JavaScript/TypeScript. It provides low-level, efficient blockchain interactions with minimal abstraction
-
-1. Install @openzeppelin/contracts to use the Math library for safe calculation
+1. Install `@openzeppelin/contracts` to use the Math library for safe calculations:
 
     ```bash
     npm i @openzeppelin/contracts
     ```
 
-1. Install dev libraries for Viem and verify 
+1. Install dev libraries for Viem and verify:
 
     ```bash
     npm i -D @nomicfoundation/hardhat-verify
     ```
 
-    > Verify : a feature to verify a contract on an Ethereum Blockchain explorer. It brings source code transparency and verification 
+    Verify is a feature that verifies contracts on an Ethereum block explorer by checking the compiled code against the source code.
+    Verifying your contracts provides source code transparency.
 
-1. (Optional) On VsCode, you have a useful Hardhat/Solidity plugin from Nomic
-
-    [Solidity plugin for VsCode](https://marketplace.visualstudio.com/items?itemName=NomicFoundation.hardhat-solidity)
+1. (Optional) If you are using VsCode for development, install the Hardhat/Solidity plugin from Nomic: [Solidity plugin for VsCode](https://marketplace.visualstudio.com/items?itemName=NomicFoundation.hardhat-solidity)
