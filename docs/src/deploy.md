@@ -1,6 +1,6 @@
 # Deploy the contract
 
-1. Deploy the contract locally with Hardbat:
+1. Deploy the contract locally with Hardhat:
 
    1. Prepare a module for the ignition plugin of Hardhat. The module will be use as the default script for deployment. Rename the default file first:
 
