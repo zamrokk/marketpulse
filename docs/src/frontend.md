@@ -927,10 +927,10 @@ Before you begin, install [Deno](https://docs.deno.com/runtime/getting_started/i
 
    1. Confirm the transaction in your wallet.
 
-   Both candidates have 50% of chance to win. Note: Default platform fees have been set to 10%, and the odds calculation take those fees into account.
+      Both candidates have 50% of chance to win. Note: Default platform fees have been set to 10%, and the odds calculation take those fees into account.
 
    1. Click one of the **Winner** buttons to resolve the poll.
 
-   The page's right-hand corner refreshes and displays the winner of the poll and the application automatically pays the winning bets.
+      The page's right-hand corner refreshes and displays the winner of the poll and the application automatically pays the winning bets.
 
    1. Find your transaction `resolveResult` on the Etherlink Testnet explorer at `https://testnet.explorer.etherlink.com`. In the **Transaction details>Internal txns**, you should see, if you are a winner, the expected amount transferred to you by the smart contract.

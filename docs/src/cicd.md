@@ -3,15 +3,15 @@
 There plenty of CICD tools on the market to build pipelines.
 Here is an example of one using the Github config files and [Vercel](https://vercel.com/) for free hosting:
 
-1. Create a Github pipeline:
+1. From the root folder that contains the HardHat config file and the frontend `app` folder, create a Github pipeline:
 
    ```bash
-   mkdir ./github
-   mkdir ./github/workflows
-   touch ./github/workflows/marketpulse.yml
+   mkdir .github
+   mkdir .github/workflows
+   touch .github/workflows/marketpulse.yml
    ```
 
-1. Edit the `./github/workflows/marketpulse.yml` file to include a CI/CD pipeline, as in this example:
+1. Edit the `.github/workflows/marketpulse.yml` file to include a CI/CD pipeline, as in this example:
 
    ```yml
    name: CI
@@ -145,9 +145,27 @@ Here is an example of one using the Github config files and [Vercel](https://ver
    - `build-app`: Build the app for production with Vite
    - `deploy-app`: Use Vercel to link the project, prepare the deployment, and deploy it
 
-1. Set these variables in the pipeline configuration:
+1. Push the project to GitHub.
 
-   - DEPLOYER_PRIVATE_KEY: The Etherlink account secret private key you need to use to deploy with Hardhat. It overrides the default env var mechanism of hardhat. Use the [Github action extension for vscode](https://marketplace.visualstudio.com/items?itemName=GitHub.vscode-github-actions) or your Github's project settings web page (`https://github.com/<MY_ALIAS>/<M.Y_PROJECT>/settings/secrets/actions`)
-   - VERCEL_TOKEN: Your personal Vercel token that your need to create on your Vercel account. For more information about configuring Vercel, see https://vercel.com/guides/how-can-i-use-github-actions-with-vercel.
+1. Set these variables in the GitHub pipeline configuration:
 
-Each time that you push your code, github action will run all the jobs. When the run is finished you can follow the deployment on the Vercel deployment page (https://vercel.com/<ORG_NAME>/<PROJECT_NAME>/deployments) and the get the URL of your deployed application.
+   - `DEPLOYER_PRIVATE_KEY`: The Etherlink account secret private key you need to use to deploy with Hardhat. This variable overrides the default environment variable mechanism of HardHat.
+   - `VERCEL_TOKEN`: Your personal Vercel token that you need to create on your Vercel account. For more information about configuring Vercel, see https://vercel.com/guides/how-can-i-use-github-actions-with-vercel.
+
+   You can set these variables in two ways:
+
+      - Use the [Github action extension for VSCode](https://marketplace.visualstudio.com/items?itemName=GitHub.vscode-github-actions) to set the variables from VSCode.
+
+      - Set the variables manually in the GitHub project settings:
+
+         1. From the GitHub repository page, click **Settings > Secrets and variables > Actions**.
+
+         1. Under **Repository secrets**, click **New repository secret**.
+
+         1. Enter the name and value of the variable and click **Add secret**.
+
+      You can see the variables on the **Actions secrets and variables** page at `https://github.com/<MY_ALIAS>/<MY_PROJECT>/settings/secrets/actions`, as in this example:
+
+      ![The two secrets in the settings for GitHub actions for the repository](github-secrets.png)
+
+Now each time that you push your code, the GitHub action runs all the jobs, including compiling the contract, deploying it, and deploying the frontend app. When the run is finished you can follow the deployment on the Vercel deployment page (`https://vercel.com/<ORG_NAME>/<PROJECT_NAME>/deployments`) and the get the URL of your deployed application.
