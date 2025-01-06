@@ -1,6 +1,6 @@
 # Create a smart contract
 
-Etherlink runs contracts in the Solidity language.
+Etherlink runs contracts like the Solidity language.
 For more information about Solidity, see https://docs.soliditylang.org.
 
 Follow these steps to set up a Solidity smart contract:
@@ -19,7 +19,7 @@ Follow these steps to set up a Solidity smart contract:
    // SPDX-License-Identifier: MIT
    pragma solidity ^0.8.24;
 
-   // Uncomment this line to use console.log
+   // Use console.log for Hardhat debugging
    import "hardhat/console.sol";
 
    import "@openzeppelin/contracts/utils/math/Math.sol";
@@ -27,7 +27,6 @@ Follow these steps to set up a Solidity smart contract:
    /**
     * @title Marketpulse
    * @author Benjamin Fuentes
-   * @notice odds are
    */
    contract Marketpulse {
        using Math for uint256;
@@ -49,11 +48,11 @@ Follow these steps to set up a Solidity smart contract:
        uint256 public constant FEES = 10; // as PERCENTAGE unit (%)
 
        /** SLOTS */
-       address payable public admin; //0
-       mapping(uint256 => Bet) public bets; //1
-       uint256[] public betKeys; //2
-       BET_RESULT public status = BET_RESULT.PENDING; //3
-       string public winner; //4
+       address payable public admin; 
+       mapping(uint256 => Bet) public bets; 
+       uint256[] public betKeys; 
+       BET_RESULT public status = BET_RESULT.PENDING; 
+       string public winner; 
 
        event Pong();
 
@@ -293,12 +292,12 @@ Follow these steps to set up a Solidity smart contract:
    This contract is a bet application where any user can place bets on a predefined poll by calling `bet`.
    Each bet includes an ID, the address of the submitter, an option that represents their choice, and the bet amount in wei.
 
-   The ID is randomly generated to showcase how to use an indexer to list all the keys of the bet `mapping` and retrieve them for calculation.
-   An optimized implementation would remove the bets themselves and keep only some aggregated variables, saving storage space and removing the need for an indexer.
+   The ID is randomly generated to showcase on the next advanced tutorial how to use an indexer to list all the bets for local odd calculation and use an oracle for randomization.
+   > Note : An optimized implementation would remove the bets themselves and keep only some aggregated variables, saving storage space and removing the need for an indexer.
 
    Users can place as many bets as they want.
    When you are ready to resolve the bets, you can call `resolveResult` and make the contract pay the correct bets.
-   In production, you could set up an oracle to do this job instead of having to call the entrypoint manually.
+   On the next advanced tutorial, an oracle is used to do this job instead of having to call the entrypoint manually.
 
    The contract calculates odds for the bet using safe math to avoid unexpected and dangerous behaviors.
 
