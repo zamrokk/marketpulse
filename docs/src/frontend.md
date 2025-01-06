@@ -1,8 +1,8 @@
 # Create the frontend application
 
-Before you begin, install [Deno](https://docs.deno.com/runtime/getting_started/installation/).
+`Deno` is not mandatory as you can still use `npm`, but we use it on this tutorial. You can install it with [this link](https://docs.deno.com/runtime/getting_started/installation/)
 
-1. Create a frontend app on the same project root directory. Here we use deno, Vite and React to start a default project;
+1. Create a frontend app on the same project root directory. Here we use `Vite` and `React` to start a default project;
 
    ```bash
    deno run -A npm:create-vite@latest
@@ -12,7 +12,7 @@ Before you begin, install [Deno](https://docs.deno.com/runtime/getting_started/i
 
 1. Choose a name for the frontend project (such as `app`, which is what the examples later use), select the `React` framework, and select the `Typescript` language.
 
-1. Run the commands in the Deno output, as in this example:
+1. Run the commands as in this example to install the dependencies and start the server:
 
    ```bash
    cd app
@@ -22,13 +22,13 @@ Before you begin, install [Deno](https://docs.deno.com/runtime/getting_started/i
 
    Now the Deno server is running a starter frontend application.
 
-1. Go back to your frontend `app` project and import the `Viem` library for blockchain interactions, `thirdweb` for the wallet connection, and `bignumber` for calculations on large numbers:
+1. Stay your frontend `./app` project and import the `Viem` library for blockchain interactions, `thirdweb` for the wallet connection and `bignumber` for calculations on large numbers:
 
    ```bash
    npm i viem thirdweb bignumber.js
    ```
 
-1. Add the `typechain` library to generate your contract structures and ABI for Typescript:
+1. Add the `typechain` library to generate your contract structures and Typescript ABI classes from your ABI json file, that is your smart contract descriptor:
 
    ```bash
    npm i -D typechain @typechain/ethers-v6
@@ -40,11 +40,11 @@ Before you begin, install [Deno](https://docs.deno.com/runtime/getting_started/i
     "postinstall": "cp ../ignition/deployments/chain-128123/deployed_addresses.json ./src  &&  typechain --target=ethers-v6 --out-dir=./src/typechain-types --show-stack-traces ../artifacts/contracts/Marketpulse.sol/Marketpulse.json",
    ```
 
-   This script copies the output address of the last deployed contract into your source files and calls typechain to generate types from the ABI file from the Hardhat folders.
+   This script copies the output address of the last deployed contract into your source files and calls `typechain` to generate types from the ABI file from the Hardhat folders.
 
 1. Run `npm i` to call the postinstall script automatically. You should see new files and folders in the `./src` folder of the frontend application.
 
-1. Create a utility file to manage Viem errors. Better to have nicer error display than technical and not helpful ones
+1. Create an utility file to manage Viem errors. Better than the technical defaults and not helpful ones
 
    ```bash
    touch ./app/src/DecodeEvmTransactionLogsArgs.ts
@@ -135,7 +135,7 @@ Before you begin, install [Deno](https://docs.deno.com/runtime/getting_started/i
 
    ```
 
-1. Edit `./app/src/main.tsx` to add a `Thirdweb` provider around your application. In the following example, replace `<THIRDWEB_CLIENTID>` with your own clientId configured on the [Thirdweb dashboard](https://portal.thirdweb.com/typescript/v4/getting-started#initialize-the-sdk):
+1. Edit `./app/src/main.tsx` to add a `Thirdweb` provider around your application. In the following example, replace **line 7** `<THIRDWEB_CLIENTID>` with your own `clientId` configured on the [Thirdweb dashboard here](https://portal.thirdweb.com/typescript/v4/getting-started#initialize-the-sdk):
 
    ```Typescript
    import { createRoot } from "react-dom/client";
@@ -154,6 +154,8 @@ Before you begin, install [Deno](https://docs.deno.com/runtime/getting_started/i
    </ThirdwebProvider>
    );
    ```
+
+   ThirdwebProvider encapsulates your application to inject account context and wrapped Viem functions
 
 1. Edit `App.tsx` to have this code:
 
@@ -693,7 +695,7 @@ Before you begin, install [Deno](https://docs.deno.com/runtime/getting_started/i
 
    - `import { Marketpulse, Marketpulse__factory } from "./typechain-types";`: Imports the contract ABI and contract structures
    - `import CONTRACT_ADDRESS_JSON from "./deployed_addresses.json";`: Imports the address of the last deployed contract automatically
-   - `const wallets = [inAppWallet(...),createWallet(...)}`: Configures the Thirdweb wallet connection. Look at the [Thirdweb playground](https://playground.thirdweb.com/connect/sign-in/button?tab=code) to play with the generator.
+   - `const wallets = [inAppWallet(...),createWallet(...)}`: Configures the Thirdweb wallet connection. Look at the [Thirdweb playground](https://playground.thirdweb.com/connect/sign-in/button?tab=code) and play with the generator.
    - `useActiveAccount`: Uses Thirdweb React hooks and functions as a wrapper over the Viem library to get the active account.
    - `const reload = async () => {`: Refreshes the smart contract storage (status, winner, fees and mapping keys).
    - `useEffect...[betKeys]);`: React effect that reloads all bets from the storage when `betKeys` is updated.
@@ -701,7 +703,7 @@ Before you begin, install [Deno](https://docs.deno.com/runtime/getting_started/i
    - `const BetFunction = () => {`: Sends your bet to the smart contract, passing along the correct amount of XTZ.
    - `const calculateOdds = (option: string, amount?: bigint): BigNumber => {`: Calculates the odds, similar to the onchain function in the smart contract.
 
-1. To fix the CSS for the page styling, replace the `App.css` file with this code:
+1. To fix the CSS for the page styling, replace the `./app/src/App.css` file with this code:
 
    ```css
    #root {
@@ -789,7 +791,7 @@ Before you begin, install [Deno](https://docs.deno.com/runtime/getting_started/i
    }
    ```
 
-1. Replace the `index.css` file with this code:
+1. Replace the `./app/src/index.css` file with this code:
 
    ```css
    :root {
@@ -933,4 +935,4 @@ Before you begin, install [Deno](https://docs.deno.com/runtime/getting_started/i
 
       The page's right-hand corner refreshes and displays the winner of the poll and the application automatically pays the winning bets.
 
-   1. Find your transaction `resolveResult` on the Etherlink Testnet explorer at `https://testnet.explorer.etherlink.com`. In the **Transaction details>Internal txns**, you should see, if you are a winner, the expected amount transferred to you by the smart contract.
+   1. Find your transaction `resolveResult` on the Etherlink Testnet explorer at `https://testnet.explorer.etherlink.com`. In the **Transaction details>Internal txns tab**, you should see, if you won something, the expected amount transferred to you from the smart contract address.

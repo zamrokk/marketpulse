@@ -1,6 +1,6 @@
 # Test the contract
 
-With blockchain development, testing is very important because you don't have the luxury to redeploy application updates as it. Hardhat provides you smart contract helpers on `chai` Testing framework to do so. 
+With blockchain development, testing is very important because you don't have the luxury to redeploy application updates as it. Hardhat provides you smart contract helpers on `chai` Testing framework to do so.
 
 1. Rename the default `./test/Lock.ts` test file to `./test/Marketpulse.ts`:
 
@@ -15,11 +15,13 @@ With blockchain development, testing is very important because you don't have th
    import { expect } from "chai";
    import hre from "hardhat";
    import { ContractFunctionExecutionError, parseEther } from "viem";
+
+   //constants and local variables
    const ODD_DECIMALS = 10;
    let initAliceAmount = 0n;
    let initBobAmount = 0n;
 
-   //crap copy pasta from Solidity code
+   //Enum definition copy/pasta from Solidity code
    enum BET_RESULT {
      WIN = 0,
      DRAW = 1,
@@ -34,7 +36,7 @@ With blockchain development, testing is very important because you don't have th
        // Contracts are deployed using the first signer/account by default
        const [owner, bob] = await hre.viem.getWalletClients();
 
-       // Set block base fee to zero
+       // Set block base fee to zero because we want exact calculation checks without network fees
        await hre.network.provider.send("hardhat_setNextBlockBaseFeePerGas", [
          "0x0",
        ]);
@@ -93,14 +95,14 @@ With blockchain development, testing is very important because you don't have th
 
      // BET SCENARIO
 
-     //FIXME test suite is so crap that a full scenario should be contained inside the same 'it' , otherwise the full context is reset
+     //full scenario should be contained inside the same 'it' , otherwise the full context is reset
      describe("scenario", () => {
        let betTrump1Id: bigint = BigInt(0);
        let betKamala2Id: string = "";
        let betKeys: bigint[] = [];
 
-       it("should run the full scenario", async () => {
-         console.log("should return a list of empty bets");
+       it("should run the full scenario correctly", async () => {
+         console.log("Initialization should return a list of empty bets");
          const {
            marketpulseContract,
            owner: alice,
@@ -110,7 +112,7 @@ With blockchain development, testing is very important because you don't have th
 
          expect(await marketpulseContract.read.betKeys.length).to.equal(0);
 
-         console.log("should return 200");
+         console.log("Trump bet for 1 ether should return a hash");
 
          const betTrump1IdHash = await marketpulseContract.write.bet(
            ["trump", parseEther("1")],
@@ -130,7 +132,7 @@ With blockchain development, testing is very important because you don't have th
 
          betTrump1Id = betKeys[0];
 
-         console.log("should find the bet");
+         console.log("Should find the Trump bet from hash");
 
          const betTrump1 = await marketpulseContract.read.getBets([betTrump1Id]);
 
@@ -142,7 +144,7 @@ With blockchain development, testing is very important because you don't have th
          expect(betTrump1.option).equals("trump");
          expect(betTrump1.amount).equals(parseEther("1"));
 
-         console.log("should get a correct odd of 0.9 (including fees)");
+         console.log("Should get a correct odd of 0.9 (including fees) for Trump if we bet 1");
 
          let odd = await marketpulseContract.read.calculateOdds([
            "trump",
@@ -151,7 +153,7 @@ With blockchain development, testing is very important because you don't have th
 
          expect(odd).equals(BigInt(Math.floor(0.9 * 10 ** ODD_DECIMALS))); //rounding
 
-         console.log("should return 200");
+         console.log("Kamala bet for 2 ethers should return a hash");
 
          // Set block base fee to zero
          await hre.network.provider.send("hardhat_setNextBlockBaseFeePerGas", [
@@ -176,7 +178,7 @@ With blockchain development, testing is very important because you don't have th
 
          const betKamala2Id = betKeys[1];
 
-         console.log("should find the bet");
+         console.log("Should find the Kamala bet from hash");
 
          const betKamala2 = await marketpulseContract.read.getBets([
            betKamala2Id,
@@ -190,7 +192,7 @@ With blockchain development, testing is very important because you don't have th
          expect(betKamala2.option).equals("kamala");
          expect(betKamala2.amount).equals(parseEther("2"));
 
-         console.log("should get a correct odd of 1.9 for trump (including fees)");
+         console.log("Should get a correct odd of 1.9 for Trump (including fees) if we bet 1");
 
          odd = await marketpulseContract.read.calculateOdds([
            "trump",
@@ -200,7 +202,7 @@ With blockchain development, testing is very important because you don't have th
          expect(odd).equals(BigInt(Math.floor(1.9 * 10 ** ODD_DECIMALS)));
 
          console.log(
-           "should get a correct odd of 1.23333 for kamala (including fees)"
+           "Should get a correct odd of 1.23333 for kamala (including fees) if we bet 1"
          );
 
          odd = await marketpulseContract.read.calculateOdds([
@@ -212,7 +214,7 @@ With blockchain development, testing is very important because you don't have th
            BigInt(Math.floor((1 + 1 / 3 - 0.1) * 10 ** ODD_DECIMALS))
          );
 
-         console.log("should return 200 with all correct balances");
+         console.log("Should return all correct balances after resolving Win on Trump");
 
          await marketpulseContract.write.resolveResult(
            ["trump", BET_RESULT.WIN],
@@ -232,13 +234,13 @@ With blockchain development, testing is very important because you don't have th
            await publicClient.getBalance({ address: bob.account.address })
          ).equals(initBobAmount - parseEther("2")); //-2
 
-         console.log("should have state finalized");
+         console.log("Should have state finalized after resolution");
 
          const result = await marketpulseContract.read.status();
          expect(result).not.null;
          expect(result).equals(BET_RESULT.WIN);
 
-         console.log("should return 500 if we try to reapply results");
+         console.log("Should return an error if we try to resolve results again");
 
          try {
            await marketpulseContract.write.resolveResult(

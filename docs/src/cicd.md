@@ -1,7 +1,7 @@
 # Set up a pipeline for the application
 
 There plenty of CICD tools on the market to build pipelines.
-Here is an example of one using the Github config files and [Vercel](https://vercel.com/) for free hosting:
+Here is an example of one using the Github configuration files and [Vercel](https://vercel.com/) for free web application hosting:
 
 1. From the root folder that contains the HardHat config file and the frontend `app` folder, create a Github pipeline:
 
@@ -11,7 +11,7 @@ Here is an example of one using the Github config files and [Vercel](https://ver
    touch .github/workflows/marketpulse.yml
    ```
 
-1. Edit the `.github/workflows/marketpulse.yml` file to include a CI/CD pipeline, as in this example:
+1. Edit the `.github/workflows/marketpulse.yml` file to create a CI/CD pipeline, as in this example:
 
    ```yml
    name: CI
@@ -149,23 +149,23 @@ Here is an example of one using the Github config files and [Vercel](https://ver
 
 1. Set these variables in the GitHub pipeline configuration:
 
-   - `DEPLOYER_PRIVATE_KEY`: The Etherlink account secret private key you need to use to deploy with Hardhat. This variable overrides the default environment variable mechanism of HardHat.
+   - `DEPLOYER_PRIVATE_KEY`: The Etherlink account secret `private key` you need to use to deploy with Hardhat. This variable overrides the default environment variable mechanism of HardHat.
    - `VERCEL_TOKEN`: Your personal Vercel token that you need to create on your Vercel account. For more information about configuring Vercel, see https://vercel.com/guides/how-can-i-use-github-actions-with-vercel.
 
    You can set these variables in two ways:
 
-      - Use the [Github action extension for VSCode](https://marketplace.visualstudio.com/items?itemName=GitHub.vscode-github-actions) to set the variables from VSCode.
+   - Use the [Github action extension for VSCode](https://marketplace.visualstudio.com/items?itemName=GitHub.vscode-github-actions) to set the variables from VSCode.
 
-      - Set the variables manually in the GitHub project settings:
+   - Set the variables manually in the GitHub project settings:
 
-         1. From the GitHub repository page, click **Settings > Secrets and variables > Actions**.
+     1. From the GitHub repository page, click **Settings > Secrets and variables > Actions**.
 
-         1. Under **Repository secrets**, click **New repository secret**.
+     1. Under **Repository secrets**, click **New repository secret**.
 
-         1. Enter the name and value of the variable and click **Add secret**.
+     1. Enter the name and value of the variable and click **Add secret**.
 
-      You can see the variables on the **Actions secrets and variables** page at `https://github.com/<MY_ALIAS>/<MY_PROJECT>/settings/secrets/actions`, as in this example:
+   You can see the variables on the **Actions secrets and variables** page at `https://github.com/<MY_ALIAS>/<MY_PROJECT>/settings/secrets/actions`, as in this example:
 
-      ![The two secrets in the settings for GitHub actions for the repository](github-secrets.png)
+   ![The two secrets in the settings for GitHub actions for the repository](github-secrets.png)
 
 Now each time that you push your code, the GitHub action runs all the jobs, including compiling the contract, deploying it, and deploying the frontend app. When the run is finished you can follow the deployment on the Vercel deployment page (`https://vercel.com/<ORG_NAME>/<PROJECT_NAME>/deployments`) and the get the URL of your deployed application.

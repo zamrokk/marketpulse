@@ -1,8 +1,10 @@
 # Deploy the contract
 
+Deploy the contract locally is fine for doing simple tests, but we recommend to target the Etherlink testnet to run complete scenarios as you may depend on other services like block explorers, oracles, etc.
+
 1. Deploy the contract locally with Hardhat:
 
-   1. Prepare a module for the ignition plugin of Hardhat. The module will be use as the default script for deployment. Rename the default file first:
+   1. Prepare a module for the ignition plugin of Hardhat. The module is used as the default script for deployment. Rename the default file first:
 
       ```bash
       mv ./ignition/modules/Lock.ts ./ignition/modules/Marketpulse.ts
@@ -27,7 +29,7 @@
       export default MarketpulseModule;
       ```
 
-      This module deploys the contract and calls the Ping endpoint to verify that it deployed.
+      This module deploys the contract and calls the Ping endpoint to verify that it deployed well.
 
    1. Start a local Ethereum node:
 
@@ -43,7 +45,7 @@
 
       You can deploy the contract to any local Ethereum node but Etherlink is a good choice because it is persistent and free and most tools and indexers are already deployed on it.
 
-1. Check that your contract deployed without problems and stop the Hardhat node.
+1. Check that your deployment logs do not contain any error and stop the Hardhat node.
 
 1. Deploy the contract on Etherlink Testnet:
 
@@ -76,8 +78,8 @@
         },
         etherscan: {
           apiKey: {
-            etherlinkMainnet: "YOU_CAN_COPY_ME",
-            etherlinkTestnet: "YOU_CAN_COPY_ME",
+            etherlinkMainnet: "DUMMY",
+            etherlinkTestnet: "DUMMY",
           },
           customChains: [
             {
@@ -105,7 +107,7 @@
 
    1. Set up an Etherlink Testnet account with some native tokens to deploy the contract. Follow this [guide](https://docs.etherlink.com/get-started/using-your-wallet) to create an account using a wallet. Then use the [faucet](https://docs.etherlink.com/get-started/getting-testnet-tokens) to get some XTZ tokens on Etherlink Testnet.
 
-   1. Export your account private key from your wallet app.
+   1. Export your account private key from your wallet application.
 
    1. Set the private key as the value of the `DEPLOYER_PRIVATE_KEY` environment variable by running this command:
 
@@ -113,9 +115,9 @@
       npx hardhat vars set DEPLOYER_PRIVATE_KEY
       ```
 
-      On the prompt, enter or paste the value of your exported private key.
+      On the prompt, enter or paste the value of your exported private key. Hardhat use its custom env var system for storing keys, we will see later how to override this on a CICD pipeline
 
-   1. Deploy the contract to Etherlink Testnet network:
+   1. Deploy the contract to Etherlink Testnet network specifying the `--network` option:
 
       ```bash
       npx hardhat ignition deploy ignition/modules/Marketpulse.ts --network etherlinkTestnet
@@ -142,12 +144,12 @@
       MarketpulseModule#Marketpulse - 0x9a8aD93E7bE3fDCA9667D457cecBE24C8ee7509f
       ```
 
-1. Run this command to verify the contract, using the contract address as the value of `<CONTRACT_ADDRESS>`:
+1. Run this command to verify your deployed contract, using the contract address as the value of `<CONTRACT_ADDRESS>`:
 
    ```bash
    npx hardhat verify --network etherlinkTestnet <CONTRACT_ADDRESS>
    ```
 
-   You can also pass the `--verify` switch to the deployment command to verify the contract as part of the deployment process.
+   You can also pass the `--verify` option to the deployment command to verify the contract as part of the deployment process.
 
 The next step is to create the frontend application.
