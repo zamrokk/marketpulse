@@ -34,10 +34,10 @@
    npm i -D typechain @typechain/ethers-v6
    ```
 
-1. Add this script to the `./package.json` file in the frontend application:
+1. Add this line to the `scripts` section of the `./app/package.json` file in the frontend application:
 
    ```json
-    "postinstall": "cp ../ignition/deployments/chain-128123/deployed_addresses.json ./src  &&  typechain --target=ethers-v6 --out-dir=./src/typechain-types --show-stack-traces ../artifacts/contracts/Marketpulse.sol/Marketpulse.json",
+        "postinstall": "cp ../ignition/deployments/chain-128123/deployed_addresses.json ./src  &&  typechain --target=ethers-v6 --out-dir=./src/typechain-types --show-stack-traces ../artifacts/contracts/Marketpulse.sol/Marketpulse.json",
    ```
 
    This script copies the output address of the last deployed contract into your source files and calls `typechain` to generate types from the ABI file from the Hardhat folders.
@@ -128,7 +128,7 @@
    // Fallback for non-BaseError
    return {
        type: "UnknownError",
-       message: String(error),
+       message: "message" in (error as any) ? (error as any).message : String(error),
        details: error instanceof Error ? error.message : undefined,
    };
    }
@@ -425,6 +425,7 @@
            error,
            Marketpulse__factory.abi
            );
+           console.log("ERROR",error)
            setError(errorParsed.message);
        }
        };

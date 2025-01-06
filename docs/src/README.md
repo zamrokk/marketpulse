@@ -25,3 +25,7 @@ In this tutorial, you will learn:
 This tutorial is not intended to be a complete course for developing smart contracts with Solidity or Hardhat or for developing frontend applications; the smart contract and frontend application in this tutorial are just examples.
 Also, the tools in this tutorial are only examples of tools that you can use with Etherlink.
 You can use many different smart contract and frontend development tools and technologies with Etherlink.
+
+## Disclaimer
+
+The code is for education purposes and hasn’t been audited or optimized. You shouldn’t use this code in production

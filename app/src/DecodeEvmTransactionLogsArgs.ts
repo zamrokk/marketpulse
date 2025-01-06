@@ -73,7 +73,7 @@ export function extractErrorDetails(error: unknown, abi: Abi): DetailedError {
   // Fallback for non-BaseError
   return {
     type: "UnknownError",
-    message: String(error),
+    message: "message" in (error as any) ? (error as any).message : String(error),
     details: error instanceof Error ? error.message : undefined,
   };
 }

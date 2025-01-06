@@ -263,6 +263,7 @@ export default function App({ thirdwebClient }: AppProps) {
           error,
           Marketpulse__factory.abi
         );
+        console.log("ERROR",error)
         setError(errorParsed.message);
       }
     };
