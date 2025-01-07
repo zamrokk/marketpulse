@@ -3,7 +3,7 @@
 This guide is an [Etherlink](https://www.etherlink.com/) tutorial to create a real application from scratch for a betting platform.
 It allows users to bet cryptocurrency on the outcome of Super Bowl Championship as a way of demonstrating how to deploy and run dApps on the Etherlink platform.
 
-<iframe frameborder="0" width="100%" height="700" src="https://polymarket.com/sports/nfl/games" ></iframe>
+![](https://zamrokk.github.io/marketpulse/images/screen.png)
 
 ## Learning objectives
 
