@@ -82,8 +82,8 @@ describe("Marketpulse", function () {
 
   //FIXME test suite is so crap that a full scenario should be contained inside the same 'it' , otherwise the full context is reset
   describe("scenario", () => {
-    let betTrump1Id: bigint = BigInt(0);
-    let betKamala2Id: string = "";
+    let betChiefs1Id: bigint = BigInt(0);
+    let betLions2Id: string = "";
     let betKeys: bigint[] = [];
 
     it("should run the full scenario", async () => {
@@ -99,15 +99,15 @@ describe("Marketpulse", function () {
 
       console.log("should return 200");
 
-      const betTrump1IdHash = await marketpulseContract.write.bet(
-        ["trump", parseEther("1")],
+      const betChiefs1IdHash = await marketpulseContract.write.bet(
+        ["chiefs", parseEther("1")],
         { value: parseEther("1"), gasPrice: 0n }
       );
-      expect(betTrump1IdHash).not.null;
+      expect(betChiefs1IdHash).not.null;
 
       // Wait for the transaction receipt
       let receipt = await publicClient.waitForTransactionReceipt({
-        hash: betTrump1IdHash,
+        hash: betChiefs1IdHash,
       });
 
       expect(receipt.status).equals("success");
@@ -115,24 +115,24 @@ describe("Marketpulse", function () {
       betKeys = [...(await marketpulseContract.read.getBetKeys())];
       console.log("betKeys", betKeys);
 
-      betTrump1Id = betKeys[0];
+      betChiefs1Id = betKeys[0];
 
       console.log("should find the bet");
 
-      const betTrump1 = await marketpulseContract.read.getBets([betTrump1Id]);
+      const betChiefs1 = await marketpulseContract.read.getBets([betChiefs1Id]);
 
-      expect(betTrump1).not.null;
+      expect(betChiefs1).not.null;
 
-      expect(betTrump1.owner.toLowerCase()).equals(
+      expect(betChiefs1.owner.toLowerCase()).equals(
         alice.account.address.toLowerCase()
       );
-      expect(betTrump1.option).equals("trump");
-      expect(betTrump1.amount).equals(parseEther("1"));
+      expect(betChiefs1.option).equals("chiefs");
+      expect(betChiefs1.amount).equals(parseEther("1"));
 
       console.log("should get a correct odd of 0.9 (including fees)");
 
       let odd = await marketpulseContract.read.calculateOdds([
-        "trump",
+        "chiefs",
         parseEther("1"),
       ]);
 
@@ -145,15 +145,15 @@ describe("Marketpulse", function () {
         "0x0",
       ]);
 
-      const betKamala2IdHash = await marketpulseContract.write.bet(
-        ["kamala", parseEther("2")],
+      const betLions2IdHash = await marketpulseContract.write.bet(
+        ["lions", parseEther("2")],
         { value: parseEther("2"), account: bob.account.address, gasPrice: 0n }
       );
-      expect(betKamala2IdHash).not.null;
+      expect(betLions2IdHash).not.null;
 
       // Wait for the transaction receipt
       receipt = await publicClient.waitForTransactionReceipt({
-        hash: betKamala2IdHash,
+        hash: betLions2IdHash,
       });
 
       expect(receipt.status).equals("success");
@@ -161,37 +161,37 @@ describe("Marketpulse", function () {
       betKeys = [...(await marketpulseContract.read.getBetKeys())];
       console.log("betKeys", betKeys);
 
-      const betKamala2Id = betKeys[1];
+      const betLions2Id = betKeys[1];
 
       console.log("should find the bet");
 
-      const betKamala2 = await marketpulseContract.read.getBets([
-        betKamala2Id,
+      const betLions2 = await marketpulseContract.read.getBets([
+        betLions2Id,
       ]);
 
-      expect(betKamala2).not.null;
+      expect(betLions2).not.null;
 
-      expect(betKamala2.owner.toLowerCase()).equals(
+      expect(betLions2.owner.toLowerCase()).equals(
         bob.account.address.toLowerCase()
       );
-      expect(betKamala2.option).equals("kamala");
-      expect(betKamala2.amount).equals(parseEther("2"));
+      expect(betLions2.option).equals("lions");
+      expect(betLions2.amount).equals(parseEther("2"));
 
-      console.log("should get a correct odd of 1.9 for trump (including fees)");
+      console.log("should get a correct odd of 1.9 for chiefs (including fees)");
 
       odd = await marketpulseContract.read.calculateOdds([
-        "trump",
+        "chiefs",
         parseEther("1"),
       ]);
 
       expect(odd).equals(BigInt(Math.floor(1.9 * 10 ** ODD_DECIMALS)));
 
       console.log(
-        "should get a correct odd of 1.23333 for kamala (including fees)"
+        "should get a correct odd of 1.23333 for lions (including fees)"
       );
 
       odd = await marketpulseContract.read.calculateOdds([
-        "kamala",
+        "lions",
         parseEther("1"),
       ]);
 
@@ -202,7 +202,7 @@ describe("Marketpulse", function () {
       console.log("should return 200 with all correct balances");
 
       await marketpulseContract.write.resolveResult(
-        ["trump", BET_RESULT.WIN],
+        ["chiefs", BET_RESULT.WIN],
         { gasPrice: 0n }
       );
 
@@ -229,7 +229,7 @@ describe("Marketpulse", function () {
 
       try {
         await marketpulseContract.write.resolveResult(
-          ["trump", BET_RESULT.WIN],
+          ["chiefs", BET_RESULT.WIN],
           { gasPrice: 0n }
         );
       } catch (e) {

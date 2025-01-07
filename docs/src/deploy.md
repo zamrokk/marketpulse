@@ -141,7 +141,7 @@ Deploy the contract locally is fine for doing simple tests, but we recommend to 
 
       Deployed Addresses
 
-      MarketpulseModule#Marketpulse - 0x9a8aD93E7bE3fDCA9667D457cecBE24C8ee7509f
+      MarketpulseModule#Marketpulse - 0xc64Bc334cf7a6b528357F8E88bbB3712E98629FF
       ```
 
 1. Run this command to verify your deployed contract, using the contract address as the value of `<CONTRACT_ADDRESS>`:

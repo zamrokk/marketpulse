@@ -385,7 +385,7 @@
 
    const BetFunction = () => {
        const [amount, setAmount] = useState<BigNumber>(BigNumber(0)); //in Ether decimals
-       const [option, setOption] = useState("trump");
+       const [option, setOption] = useState("chiefs");
 
        const runFunction = async () => {
        try {
@@ -471,15 +471,15 @@
        <span style={{ alignContent: "center", width: "100%" }}>
            {status && status === BET_RESULT.PENDING ? (
            <>
-               <h3>Choose candidate</h3>
+               <h3>Choose team</h3>
 
                <select
                name="options"
                onChange={(e) => setOption(e.target.value)}
                value={option}
                >
-               <option value="trump">Donald Trump</option>
-               <option value="harris">Kamala Harris</option>
+               <option value="chiefs"> Chiefs</option>
+               <option value="lions">Lions </option>
                </select>
                <h3>Amount</h3>
                <input
@@ -626,7 +626,7 @@
                        <div className="picDiv">
                            <img
                            style={{ objectFit: "cover", height: "inherit" }}
-                          src={option === "trump" ? "https://polymarket.com/_next/image?url=%2Fimages%2Felections%2Fpres-trump.png&w=256&q=75" : "https://polymarket.com/_next/image?url=%2Fimages%2Felections%2Fpres-kamala.png&w=256&q=75" }
+                          src={option === "chiefs" ? "https://polymarket.com/_next/image?url=%2Fimages%2Felections%2Fpres-chiefs.png&w=256&q=75" : "https://polymarket.com/_next/image?url=%2Fimages%2Felections%2Fpres-lions.png&w=256&q=75" }
                            ></img>
                        </div>
                        {option}
@@ -920,17 +920,17 @@
 
 1. Run a betting scenario:
 
-   1. Select **Donald Trump** on the select box on the right corner, choose a small amount like **0.00001 XTZ**, and click the **Bet** button.
+   1. Select ** Chiefs** on the select box on the right corner, choose a small amount like **0.00001 XTZ**, and click the **Bet** button.
 
    1. Confirm the transaction in your wallet. Beware of funding your wallet with Etherlink testnet XTZ, otherwise you will receive an `OutOfFund` error 
 
    1. Disconnect and connect with another account in your wallet.
 
-   1. Select **Kamala Harris** on the select box on the right corner, choose a small amount like **0.00001 XTZ**, and click the **Bet** button.
+   1. Select **Lions ** on the select box on the right corner, choose a small amount like **0.00001 XTZ**, and click the **Bet** button.
 
    1. Confirm the transaction in your wallet.
 
-      Both candidates have 50% of chance to win. Note: Default platform fees have been set to 10%, and the odds calculation take those fees into account.
+      Both teams have 50% of chance to win. Note: Default platform fees have been set to 10%, and the odds calculation take those fees into account.
 
    1. Click one of the **Winner** buttons to resolve the poll.
 

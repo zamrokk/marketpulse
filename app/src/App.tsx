@@ -223,7 +223,7 @@ export default function App({ thirdwebClient }: AppProps) {
 
   const BetFunction = () => {
     const [amount, setAmount] = useState<BigNumber>(BigNumber(0)); //in Ether decimals
-    const [option, setOption] = useState("trump");
+    const [option, setOption] = useState("chiefs");
 
     const runFunction = async () => {
       try {
@@ -309,15 +309,15 @@ export default function App({ thirdwebClient }: AppProps) {
       <span style={{ alignContent: "center", width: "100%" }}>
         {status && status === BET_RESULT.PENDING ? (
           <>
-            <h3>Choose candidate</h3>
+            <h3>Choose team</h3>
 
             <select
               name="options"
               onChange={(e) => setOption(e.target.value)}
               value={option}
             >
-              <option value="trump">Donald Trump</option>
-              <option value="harris">Kamala Harris</option>
+              <option value="chiefs"> Chiefs</option>
+              <option value="lions">Lions </option>
             </select>
             <h3>Amount</h3>
             <input
