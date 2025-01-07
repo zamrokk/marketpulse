@@ -2,11 +2,13 @@ import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpe
 import { expect } from "chai";
 import hre from "hardhat";
 import { ContractFunctionExecutionError, parseEther } from "viem";
+
+//constants and local variables
 const ODD_DECIMALS = 10;
 let initAliceAmount = 0n;
 let initBobAmount = 0n;
 
-//crap copy pasta from Solidity code
+//Enum definition copy/pasta from Solidity code
 enum BET_RESULT {
   WIN = 0,
   DRAW = 1,
@@ -21,7 +23,7 @@ describe("Marketpulse", function () {
     // Contracts are deployed using the first signer/account by default
     const [owner, bob] = await hre.viem.getWalletClients();
 
-    // Set block base fee to zero
+    // Set block base fee to zero because we want exact calculation checks without network fees
     await hre.network.provider.send("hardhat_setNextBlockBaseFeePerGas", [
       "0x0",
     ]);
@@ -80,14 +82,14 @@ describe("Marketpulse", function () {
 
   // BET SCENARIO
 
-  //FIXME test suite is so crap that a full scenario should be contained inside the same 'it' , otherwise the full context is reset
+  //full scenario should be contained inside the same 'it' , otherwise the full context is reset
   describe("scenario", () => {
     let betChiefs1Id: bigint = BigInt(0);
     let betLions2Id: string = "";
     let betKeys: bigint[] = [];
 
-    it("should run the full scenario", async () => {
-      console.log("should return a list of empty bets");
+    it("should run the full scenario correctly", async () => {
+      console.log("Initialization should return a list of empty bets");
       const {
         marketpulseContract,
         owner: alice,
@@ -97,7 +99,7 @@ describe("Marketpulse", function () {
 
       expect(await marketpulseContract.read.betKeys.length).to.equal(0);
 
-      console.log("should return 200");
+      console.log("Chiefs bet for 1 ether should return a hash");
 
       const betChiefs1IdHash = await marketpulseContract.write.bet(
         ["chiefs", parseEther("1")],
@@ -117,7 +119,7 @@ describe("Marketpulse", function () {
 
       betChiefs1Id = betKeys[0];
 
-      console.log("should find the bet");
+      console.log("Should find the Chiefs bet from hash");
 
       const betChiefs1 = await marketpulseContract.read.getBets([betChiefs1Id]);
 
@@ -129,7 +131,9 @@ describe("Marketpulse", function () {
       expect(betChiefs1.option).equals("chiefs");
       expect(betChiefs1.amount).equals(parseEther("1"));
 
-      console.log("should get a correct odd of 0.9 (including fees)");
+      console.log(
+        "Should get a correct odd of 0.9 (including fees) for Chiefs if we bet 1"
+      );
 
       let odd = await marketpulseContract.read.calculateOdds([
         "chiefs",
@@ -138,7 +142,7 @@ describe("Marketpulse", function () {
 
       expect(odd).equals(BigInt(Math.floor(0.9 * 10 ** ODD_DECIMALS))); //rounding
 
-      console.log("should return 200");
+      console.log("Lions bet for 2 ethers should return a hash");
 
       // Set block base fee to zero
       await hre.network.provider.send("hardhat_setNextBlockBaseFeePerGas", [
@@ -163,11 +167,9 @@ describe("Marketpulse", function () {
 
       const betLions2Id = betKeys[1];
 
-      console.log("should find the bet");
+      console.log("Should find the Lions bet from hash");
 
-      const betLions2 = await marketpulseContract.read.getBets([
-        betLions2Id,
-      ]);
+      const betLions2 = await marketpulseContract.read.getBets([betLions2Id]);
 
       expect(betLions2).not.null;
 
@@ -177,7 +179,9 @@ describe("Marketpulse", function () {
       expect(betLions2.option).equals("lions");
       expect(betLions2.amount).equals(parseEther("2"));
 
-      console.log("should get a correct odd of 1.9 for chiefs (including fees)");
+      console.log(
+        "Should get a correct odd of 1.9 for Chiefs (including fees) if we bet 1"
+      );
 
       odd = await marketpulseContract.read.calculateOdds([
         "chiefs",
@@ -187,7 +191,7 @@ describe("Marketpulse", function () {
       expect(odd).equals(BigInt(Math.floor(1.9 * 10 ** ODD_DECIMALS)));
 
       console.log(
-        "should get a correct odd of 1.23333 for lions (including fees)"
+        "Should get a correct odd of 1.23333 for lions (including fees) if we bet 1"
       );
 
       odd = await marketpulseContract.read.calculateOdds([
@@ -199,7 +203,9 @@ describe("Marketpulse", function () {
         BigInt(Math.floor((1 + 1 / 3 - 0.1) * 10 ** ODD_DECIMALS))
       );
 
-      console.log("should return 200 with all correct balances");
+      console.log(
+        "Should return all correct balances after resolving Win on Chiefs"
+      );
 
       await marketpulseContract.write.resolveResult(
         ["chiefs", BET_RESULT.WIN],
@@ -219,13 +225,13 @@ describe("Marketpulse", function () {
         await publicClient.getBalance({ address: bob.account.address })
       ).equals(initBobAmount - parseEther("2")); //-2
 
-      console.log("should have state finalized");
+      console.log("Should have state finalized after resolution");
 
       const result = await marketpulseContract.read.status();
       expect(result).not.null;
       expect(result).equals(BET_RESULT.WIN);
 
-      console.log("should return 500 if we try to reapply results");
+      console.log("Should return an error if we try to resolve results again");
 
       try {
         await marketpulseContract.write.resolveResult(

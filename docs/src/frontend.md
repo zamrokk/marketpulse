@@ -159,7 +159,7 @@
 
 1. Edit `App.tsx` to have this code:
 
-   ```Typescript
+   ```TypeScript
    import { Marketpulse, Marketpulse__factory } from "./typechain-types";
 
    import BigNumber from "bignumber.js";
@@ -425,7 +425,7 @@
            error,
            Marketpulse__factory.abi
            );
-           console.log("ERROR",error)
+           console.log("ERROR", error);
            setError(errorParsed.message);
        }
        };
@@ -604,10 +604,10 @@
 
        <div id="content" style={{ display: "flex", paddingTop: 10 }}>
            <div style={{ width: "calc(66vw - 4rem)" }}>
-            <img
-                style={{maxHeight: "40vh"}}
-                src="https://s.yimg.com/ny/api/res/1.2/UgmCx.2wzbFBh.IpbuHHJw--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyNDI7aD05MTQ-/https://media.zenfs.com/en/quartz.com/618289326ca67ac63b8e3cb49aaeb996"
-            />
+           <img
+               style={{ maxHeight: "40vh" }}
+               src="https://zamrokk.github.io/marketpulse/images/graph.png"
+           />
            <hr />
 
            <table style={{ width: "inherit" }}>
@@ -626,7 +626,11 @@
                        <div className="picDiv">
                            <img
                            style={{ objectFit: "cover", height: "inherit" }}
-                          src={option === "chiefs" ? "https://polymarket.com/_next/image?url=%2Fimages%2Felections%2Fpres-chiefs.png&w=256&q=75" : "https://polymarket.com/_next/image?url=%2Fimages%2Felections%2Fpres-lions.png&w=256&q=75" }
+                           src={
+                               "https://zamrokk.github.io/marketpulse/images/" +
+                               option +
+                               ".png"
+                           }
                            ></img>
                        </div>
                        {option}
@@ -690,6 +694,7 @@
        </>
    );
    }
+
    ```
 
    Explanations :
@@ -922,7 +927,7 @@
 
    1. Select ** Chiefs** on the select box on the right corner, choose a small amount like **0.00001 XTZ**, and click the **Bet** button.
 
-   1. Confirm the transaction in your wallet. Beware of funding your wallet with Etherlink testnet XTZ, otherwise you will receive an `OutOfFund` error 
+   1. Confirm the transaction in your wallet. Beware of funding your wallet with Etherlink testnet XTZ, otherwise you will receive an `OutOfFund` error
 
    1. Disconnect and connect with another account in your wallet.
 
